@@ -1,0 +1,56 @@
+# ====================================================================
+# Visual Studio Build Artifacts & Temporaries
+# ====================================================================
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio cache, options, and intelligence tracking
+.vs/
+*.opensdf
+*.sdf
+*.tlog
+*.idb
+*.pdb
+*.ilk
+*.exe
+*.vc.db
+*.ipch/
+
+# ====================================================================
+# OpenGL & C++ Dependencies (Adjust based on your setup)
+# ====================================================================
+# Ignore compiled external library binaries if you download them via NuGet or vcpkg
+# (Keep this if you don't commit your third-party .lib/.dll files directly)
+# *.lib
+# *.dll
+
+# CMake artifacts (if you use CMake inside Visual Studio)
+CMakeCache.txt
+CMakeFiles/
+CMakeSettings.json
+out/
+
+# ====================================================================
+# What you SHOULD keep (Do NOT ignore these)
+# ====================================================================
+# !.gitignore
+# !*.cpp
+# !*.h
+# !*.hpp
+# !*.sln
+# !*.vcxproj
+# !*.vcxproj.filters
