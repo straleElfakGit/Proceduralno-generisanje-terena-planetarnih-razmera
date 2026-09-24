@@ -123,6 +123,12 @@
     <ClCompile Include="src\Graphics\Textures\GradientTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Galaxy\Galaxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Scenes\PlanetScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Buffers\EBO.h">
@@ -254,9 +260,23 @@
     <ClInclude Include="src\Graphics\Textures\GradientTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\Settings\SunSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Settings\PlanetSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Scenes\PlanetScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Galaxy\Galaxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Shaders\skyBoxShader.vert" />
     <None Include="assets\Shaders\skyBoxShader.frag" />
+    <None Include="assets\Shaders\planetShader.vert" />
+    <None Include="assets\Shaders\planetShader.frag" />
   </ItemGroup>
 </Project>

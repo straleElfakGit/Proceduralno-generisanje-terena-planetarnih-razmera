@@ -155,8 +155,10 @@
   <ItemGroup>
     <ClCompile Include="src\Core\Application\Application.cpp" />
     <ClCompile Include="src\Core\Application\ApplicationBase.cpp" />
+    <ClCompile Include="src\Core\Galaxy\Galaxy.cpp" />
     <ClCompile Include="src\Core\Logging\Logger.cpp" />
     <ClCompile Include="src\Core\Scenes\BasicScene.cpp" />
+    <ClCompile Include="src\Core\Scenes\PlanetScene.cpp" />
     <ClCompile Include="src\Core\Scenes\SceneMenu.cpp" />
     <ClCompile Include="src\Core\Window\Window.cpp" />
     <ClCompile Include="src\Graphics\Buffers\VAOLayout.cpp" />
@@ -193,10 +195,14 @@
   <ItemGroup>
     <ClInclude Include="src\Core\Application\Application.h" />
     <ClInclude Include="src\Core\Application\ApplicationBase.h" />
+    <ClInclude Include="src\Core\Galaxy\Galaxy.h" />
     <ClInclude Include="src\Core\Logging\Logger.h" />
     <ClInclude Include="src\Core\Scenes\BasicScene.h" />
+    <ClInclude Include="src\Core\Scenes\PlanetScene.h" />
     <ClInclude Include="src\Core\Scenes\Scene.h" />
     <ClInclude Include="src\Core\Scenes\SceneMenu.h" />
+    <ClInclude Include="src\Core\Settings\PlanetSettings.h" />
+    <ClInclude Include="src\Core\Settings\SunSettings.h" />
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Core\Timestep.h" />
     <ClInclude Include="src\Core\Window\DefaultWindowConfig.h" />
@@ -236,6 +242,8 @@
     <ClInclude Include="src\Vendor\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\Shaders\planetShader.frag" />
+    <None Include="assets\Shaders\planetShader.vert" />
     <None Include="assets\Shaders\skyBoxShader.frag" />
     <None Include="assets\Shaders\skyBoxShader.vert" />
   </ItemGroup>
