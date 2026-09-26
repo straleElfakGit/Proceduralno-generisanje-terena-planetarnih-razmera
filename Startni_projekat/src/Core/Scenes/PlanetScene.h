@@ -1,6 +1,8 @@
 #ifndef PLANET_SCENE_H
 #define PLANET_SCENE_H
 
+#include <random>
+
 #include "Application/ApplicationBase.h"
 #include "Camera/Camera.h"
 #include "Galaxy/Galaxy.h"
@@ -10,7 +12,9 @@
 #include "shaderClass.h"
 #include "Scene.h"
 #include "Settings/PlanetSettings.h"
+#include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
+#include "PlanetGeneration/Noise.h"
 
 class PlanetScene : public Scene
 {
@@ -26,6 +30,9 @@ private:
     PlanetSettings planetSettings;
     SunSettings sunSettings;
 
+    Noise noise;
+    NoiseSettings noiseSettings;
+
     float fov = 45.0f;
 
     virtual void OnScroll(double xoffset, double yoffset) override;
@@ -34,6 +41,9 @@ private:
 
     void RenderPlanetPropertiesGui();
     void RenderSunGui();
+    void RenderNoiseSettings();
+
+    void SendNoiseSettingsToShader();
 
 public:
     PlanetScene(ApplicationBase* app);

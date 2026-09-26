@@ -18,6 +18,11 @@ void PlanetScene::Start()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
+
+	SendNoiseSettingsToShader();
+
+	shaderPtr->Activate();
+	shaderPtr->setIntArray("perm", noise.GetPermutationTable(), Noise::PermutationTableSize);
 }
 
 void PlanetScene::UpdateSunPosition()
@@ -65,6 +70,7 @@ void PlanetScene::Update(float deltaTime)
 	sunSettings.lightPtr->SetShaderProgramParameters(*shaderPtr, "dirLight");
 
 	shaderPtr->setInt("resolution", static_cast<int>(planetSettings.resolution));
+	shaderPtr->setIntArray("perm", noise.GetPermutationTable(), Noise::PermutationTableSize);
 }
 
 void PlanetScene::Render()
@@ -124,6 +130,69 @@ void PlanetScene::RenderSunGui()
 	}
 }
 
+void PlanetScene::SendNoiseSettingsToShader()
+{
+	shaderPtr->Activate();
+
+	shaderPtr->setFloat("noise.strength", noiseSettings.strength);
+	shaderPtr->setInt("noise.numberOfOctaves", noiseSettings.numberOfOctaves);
+	shaderPtr->setFloat("noise.baseRoughness", noiseSettings.baseRoughness);
+	shaderPtr->setFloat("noise.roughness", noiseSettings.roughness);
+	shaderPtr->setFloat("noise.persistance", noiseSettings.persistance);
+	shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
+	shaderPtr->setVec3("noise.center", noiseSettings.center);
+}
+
+void PlanetScene::RenderNoiseSettings()
+{
+	if (ImGui::SliderInt("Number of octavs", &noiseSettings.numberOfOctaves, 1, 8))
+	{
+		shaderPtr->Activate();
+		shaderPtr->setInt("noise.numberOfOctaves", noiseSettings.numberOfOctaves);
+	}
+
+	if (ImGui::SliderFloat("Strength", &noiseSettings.strength, 0.0f, 2.0f))
+	{
+		shaderPtr->Activate();
+		shaderPtr->setFloat("noise.strength", noiseSettings.strength);
+	}
+
+	if (ImGui::SliderFloat("Base roughness", &noiseSettings.baseRoughness, 0.1f, 4.0f))
+	{
+		shaderPtr->Activate();
+		shaderPtr->setFloat("noise.baseRoughness", noiseSettings.baseRoughness);
+	}
+
+	if (ImGui::SliderFloat("Roughness", &noiseSettings.roughness, 1.0f, 4.0f))
+	{
+		shaderPtr->Activate();
+		shaderPtr->setFloat("noise.roughness", noiseSettings.roughness);
+	}
+
+	if (ImGui::SliderFloat("Persistance", &noiseSettings.persistance, 0.0f, 1.0f))
+	{
+		shaderPtr->Activate();
+		shaderPtr->setFloat("noise.persistance", noiseSettings.persistance);
+	}
+
+	if (ImGui::SliderFloat("Min value", &noiseSettings.minValue, 0.0f, 2.0f))
+	{
+		shaderPtr->Activate();
+		shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
+	}
+
+	if (ImGui::DragFloat3("Center", glm::value_ptr(noiseSettings.center), 0.01f))
+	{
+		shaderPtr->Activate();
+		shaderPtr->setVec3("noise.center", noiseSettings.center);
+	}
+	if (ImGui::Button("Randomize Seed"))
+	{
+		std::random_device rd;
+		noise.ChangeDitribution(static_cast<int>(rd()));
+	}
+}
+
 void PlanetScene::OnImGuiRender()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -133,6 +202,9 @@ void PlanetScene::OnImGuiRender()
 
 	if (ImGui::CollapsingHeader("Sun & Lighting"))
 		RenderSunGui();
+
+	if (ImGui::CollapsingHeader("Noise settings"))
+		RenderNoiseSettings();
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 }
