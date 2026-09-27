@@ -28,6 +28,10 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
 void main()
 {
+    //vec3 dx = dFdx(fragPos);
+    //vec3 dy = dFdy(fragPos);
+    //vec3 normal = normalize(cross(dx, dy));
+
     vec3 norm = normalize(normal);
     vec3 viewDir = normalize(viewPos - fragPos);
     vec3 result = CalcDirLight(dirLight, norm, viewDir);
