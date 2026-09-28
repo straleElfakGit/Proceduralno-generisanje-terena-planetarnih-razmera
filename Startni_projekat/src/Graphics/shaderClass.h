@@ -3,6 +3,7 @@
 
 #include "GLResource.h"
 #include "Logging/Logger.h"
+#include "Utils/FileManager.h"
 #include <glad/glad.h>
 #include <string>
 #include <fstream>

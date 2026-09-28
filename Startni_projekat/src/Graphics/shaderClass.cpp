@@ -46,8 +46,8 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 {
 	LOG_FUNC();
 
-	std::string vertexCode = get_file_contents(vertexFile);
-	std::string fragmentCode = get_file_contents(fragmentFile);
+	std::string vertexCode = FileManager::get_file_contents_processed(vertexFile);
+	std::string fragmentCode = FileManager::get_file_contents_processed(fragmentFile);
 
 	const char* vertexSource = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();

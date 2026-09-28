@@ -135,6 +135,9 @@
     <ClCompile Include="src\Core\ResourceManager\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Utils\FileManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Buffers\EBO.h">
@@ -287,11 +290,16 @@
     <ClInclude Include="src\Core\ResourceManager\ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\Utils\FileManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Shaders\skyBoxShader.vert" />
     <None Include="assets\Shaders\skyBoxShader.frag" />
     <None Include="assets\Shaders\planetShader.vert" />
     <None Include="assets\Shaders\planetShader.frag" />
+    <None Include="assets\Shaders\noise_evaluation.glsl" />
+    <None Include="assets\Shaders\position_calculation.glsl" />
   </ItemGroup>
 </Project>

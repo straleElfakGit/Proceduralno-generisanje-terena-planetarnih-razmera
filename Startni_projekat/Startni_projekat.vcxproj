@@ -162,6 +162,7 @@
     <ClCompile Include="src\Core\Scenes\BasicScene.cpp" />
     <ClCompile Include="src\Core\Scenes\PlanetScene.cpp" />
     <ClCompile Include="src\Core\Scenes\SceneMenu.cpp" />
+    <ClCompile Include="src\Core\Utils\FileManager.cpp" />
     <ClCompile Include="src\Core\Window\Window.cpp" />
     <ClCompile Include="src\Graphics\Buffers\VAOLayout.cpp" />
     <ClCompile Include="src\Graphics\Buffers\VertexBufferLayout.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="src\Core\Settings\SunSettings.h" />
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Core\Timestep.h" />
+    <ClInclude Include="src\Core\Utils\FileManager.h" />
     <ClInclude Include="src\Core\Window\DefaultWindowConfig.h" />
     <ClInclude Include="src\Core\Window\Window.h" />
     <ClInclude Include="src\Graphics\Buffers\VAOLayout.h" />
@@ -247,8 +249,10 @@
     <ClInclude Include="src\Vendor\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\Shaders\noise_evaluation.glsl" />
     <None Include="assets\Shaders\planetShader.frag" />
     <None Include="assets\Shaders\planetShader.vert" />
+    <None Include="assets\Shaders\position_calculation.glsl" />
     <None Include="assets\Shaders\skyBoxShader.frag" />
     <None Include="assets\Shaders\skyBoxShader.vert" />
   </ItemGroup>
