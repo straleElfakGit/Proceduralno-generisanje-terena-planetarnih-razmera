@@ -11,13 +11,14 @@
 #include "Buffers/VBO.h"
 #include "Buffers/VAOLayout.h"
 #include "shaderClass.h"
+#include "ResourceManager/ResourceManager.h"
 
 class Galaxy
 {
 private:
 	const Shader& shader;
 
-	std::unique_ptr<CubeMap> cubeMap;
+	CubeMap* cubeMap;
 	std::unique_ptr<VAOLayout> vao;
 	std::unique_ptr<VBO<GLfloat>> vbo;
 	std::unique_ptr<EBO<GLuint>> ebo;

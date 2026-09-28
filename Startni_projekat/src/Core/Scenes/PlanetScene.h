@@ -15,14 +15,15 @@
 #include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
 #include "PlanetGeneration/Noise.h"
+#include "ResourceManager/ResourceManager.h"
 
 class PlanetScene : public Scene
 {
 private:
-    std::unique_ptr<Shader> shaderPtr;
+    Shader* shaderPtr;
     std::unique_ptr<Camera> cameraPtr;
 
-    std::unique_ptr<Shader> galaxyShaderPtr;
+    Shader* galaxyShaderPtr;
     std::unique_ptr<Galaxy> galaxyPtr;
 
     GLuint vao;

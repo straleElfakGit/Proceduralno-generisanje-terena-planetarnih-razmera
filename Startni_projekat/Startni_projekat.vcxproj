@@ -158,6 +158,7 @@
     <ClCompile Include="src\Core\Galaxy\Galaxy.cpp" />
     <ClCompile Include="src\Core\Logging\Logger.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\Noise.cpp" />
+    <ClCompile Include="src\Core\ResourceManager\ResourceManager.cpp" />
     <ClCompile Include="src\Core\Scenes\BasicScene.cpp" />
     <ClCompile Include="src\Core\Scenes\PlanetScene.cpp" />
     <ClCompile Include="src\Core\Scenes\SceneMenu.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="src\Core\Galaxy\Galaxy.h" />
     <ClInclude Include="src\Core\Logging\Logger.h" />
     <ClInclude Include="src\Core\PlanetGeneration\Noise.h" />
+    <ClInclude Include="src\Core\ResourceManager\ResourceManager.h" />
     <ClInclude Include="src\Core\Scenes\BasicScene.h" />
     <ClInclude Include="src\Core\Scenes\PlanetScene.h" />
     <ClInclude Include="src\Core\Scenes\Scene.h" />

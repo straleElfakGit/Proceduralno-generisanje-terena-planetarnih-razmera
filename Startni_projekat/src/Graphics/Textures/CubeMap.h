@@ -16,6 +16,8 @@ protected:
 	virtual void DeleteSpecific() override;
 
 public:
+	static std::unique_ptr<CubeMap> CreateUnique(const std::array<const char*, 6>& faces, GLuint slot);
+
 	// (right, left, top, bottom, front, back)
 	CubeMap(const std::array<const char*, 6>& faces, GLuint slot);
 	~CubeMap();

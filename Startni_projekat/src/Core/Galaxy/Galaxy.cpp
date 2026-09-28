@@ -31,7 +31,9 @@ namespace
 Galaxy::Galaxy(const Shader& shader)
 	: shader(shader)
 {
-	cubeMap = std::make_unique<CubeMap>(
+	ResourceManager& rm = ResourceManager::GetInstance();
+
+	cubeMap = rm.GetOrLoadCubeMap("SpaceSkybox1",
 		std::array<const char*, 6>{
 		"assets/Textures/Background/SpaceSkybox1/galaxy+X.png",
 			"assets/Textures/Background/SpaceSkybox1/galaxy-X.png",

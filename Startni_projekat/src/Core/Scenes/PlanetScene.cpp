@@ -2,10 +2,12 @@
 
 PlanetScene::PlanetScene(ApplicationBase* app) : Scene(app)
 {
-	shaderPtr = std::make_unique<Shader>("assets/Shaders/planetShader.vert", "assets/Shaders/planetShader.frag");
+	ResourceManager& rm = ResourceManager::GetInstance();
+
+	shaderPtr = rm.GetOrLoadShader("PlanetShader", "assets/Shaders/planetShader.vert", "assets/Shaders/planetShader.frag");
 	cameraPtr = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f));
 
-	galaxyShaderPtr = std::make_unique<Shader>("assets/Shaders/skyBoxShader.vert", "assets/Shaders/skyBoxShader.frag");
+	galaxyShaderPtr = rm.GetOrLoadShader("SkyboxShader", "assets/Shaders/skyBoxShader.vert", "assets/Shaders/skyBoxShader.frag");
 	galaxyPtr = std::make_unique<Galaxy>(*galaxyShaderPtr);
 
 	glGenVertexArrays(1, &vao);

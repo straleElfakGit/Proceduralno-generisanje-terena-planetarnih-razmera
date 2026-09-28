@@ -3,8 +3,15 @@
 #include <iostream>
 #include <stb/stb_image.h>
 
+std::unique_ptr<CubeMap> CubeMap::CreateUnique(const std::array<const char*, 6>& faces, GLuint slot)
+{
+	return std::make_unique<CubeMap>(faces, slot);
+}
+
 CubeMap::CubeMap(const std::array<const char*, 6>& faces, GLuint slot)
 {
+	LOG_FUNC();
+
 	unit = slot;
 
 	glGenTextures(1, &ID);
@@ -60,6 +67,7 @@ CubeMap::CubeMap(const std::array<const char*, 6>& faces, GLuint slot)
 
 CubeMap::~CubeMap()
 {
+	LOG_FUNC();
 	Delete();
 }
 

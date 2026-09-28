@@ -1,7 +1,14 @@
 #include"Texture.h"
 
+std::unique_ptr<Texture> Texture::CreateUnique(const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType)
+{
+	return std::make_unique<Texture>(image, texType, slot, format, pixelType);
+}
+
 Texture::Texture(const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType)
 {
+	LOG_FUNC();
+
 	type = texType;
 	unit = slot;
 
@@ -40,6 +47,7 @@ Texture::Texture(const char* image, GLenum texType, GLuint slot, GLenum format, 
 
 Texture::~Texture()
 {
+	LOG_FUNC();
 	Delete();
 }
 

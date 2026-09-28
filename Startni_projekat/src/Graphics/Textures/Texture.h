@@ -3,6 +3,7 @@
 
 #include<glad/glad.h>
 #include<stb/stb_image.h>
+#include <memory>
 
 #include "GLResource.h"
 #include"shaderClass.h"
@@ -17,6 +18,8 @@ protected:
 	virtual void DeleteSpecific() override;
 
 public:
+	static std::unique_ptr<Texture> CreateUnique(const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType);
+
 	Texture(const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType);
 	~Texture();
 

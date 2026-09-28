@@ -16,6 +16,11 @@ std::string get_file_contents(const char* filename)
 	throw(errno);
 }
 
+std::unique_ptr<Shader> Shader::CreateUniqe(const std::string& vertPath, const std::string& fragPath)
+{
+	return std::make_unique<Shader>(vertPath.c_str(), fragPath.c_str());
+}
+
 void Shader::PrintError(GLuint shader)
 {
 	char infoLog[512];
@@ -39,6 +44,8 @@ GLuint Shader::CreateShader(GLenum type, const char* shaderSource)
 
 Shader::Shader(const char* vertexFile, const char* fragmentFile)
 {
+	LOG_FUNC();
+
 	std::string vertexCode = get_file_contents(vertexFile);
 	std::string fragmentCode = get_file_contents(fragmentFile);
 
@@ -59,6 +66,7 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 
 Shader::~Shader()
 {
+	LOG_FUNC();
 	Delete();
 }
 

@@ -1,16 +1,18 @@
 #ifndef SHADER_CLASS_H
 #define SHADER_CLASS_H
 
-#include"GLResource.h"
-#include<glad/glad.h>
-#include<string>
-#include<fstream>
-#include<sstream>
-#include<iostream>
-#include<cerrno>
-#include<glm/glm.hpp>
-#include<glm/gtc/type_ptr.hpp>
+#include "GLResource.h"
+#include "Logging/Logger.h"
+#include <glad/glad.h>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <cerrno>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <unordered_map>
+#include <memory>
 
 std::string get_file_contents(const char* filename);
 
@@ -27,6 +29,9 @@ protected:
 	virtual void DeleteSpecific() override;
 
 public:
+	static std::unique_ptr<Shader> CreateUniqe(
+		const std::string& vertPath, const std::string& fragPath);
+
 	Shader(const char* vertexFile, const char* fragmentFile);
 	~Shader();
 

@@ -4,6 +4,7 @@
 #include <vector>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <memory>
 
 #include "Logging/Logger.h"
 #include "GLResource.h"
@@ -17,6 +18,8 @@ protected:
 	virtual void DeleteSpecific() override;
 
 public:
+	static std::unique_ptr<GradientTexture> CreateUnique(int resolution, GLuint slot);
+
 	GradientTexture(int resolution, GLuint slot);
 	~GradientTexture();
 

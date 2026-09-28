@@ -1,8 +1,15 @@
 #include "GradientTexture.h"
 
+std::unique_ptr<GradientTexture> GradientTexture::CreateUnique(int resolution, GLuint slot)
+{
+	return std::make_unique<GradientTexture>(resolution, slot);
+}
+
 GradientTexture::GradientTexture(int resolution, GLuint slot)
 	:unit(slot)
 {
+	LOG_FUNC();
+
 	glGenTextures(1, &ID);
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, ID);
@@ -17,6 +24,7 @@ GradientTexture::GradientTexture(int resolution, GLuint slot)
 
 GradientTexture::~GradientTexture()
 {
+	LOG_FUNC();
 	Delete();
 }
 
