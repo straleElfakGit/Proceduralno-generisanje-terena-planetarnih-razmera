@@ -5,6 +5,7 @@
 
 struct NoiseSettings
 {
+	unsigned int seed = 0;
 	float strength = 0.2f;
 	float roughness = 2.0f;
 	float baseRoughness = 1.0f;

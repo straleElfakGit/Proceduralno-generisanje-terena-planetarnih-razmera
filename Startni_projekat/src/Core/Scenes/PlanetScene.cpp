@@ -141,6 +141,7 @@ void PlanetScene::SendNoiseSettingsToShader()
 	shaderPtr->setFloat("noise.persistance", noiseSettings.persistance);
 	shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
 	shaderPtr->setVec3("noise.center", noiseSettings.center);
+	shaderPtr->setUint("noise.seed", noiseSettings.seed);
 }
 
 void PlanetScene::RenderNoiseSettings()
@@ -189,7 +190,9 @@ void PlanetScene::RenderNoiseSettings()
 	if (ImGui::Button("Randomize Seed"))
 	{
 		std::random_device rd;
-		noise.ChangeDitribution(static_cast<int>(rd()));
+		noiseSettings.seed = static_cast<unsigned int>(rd());
+		shaderPtr->Activate();
+		shaderPtr->setUint("noise.seed", noiseSettings.seed);
 	}
 }
 
