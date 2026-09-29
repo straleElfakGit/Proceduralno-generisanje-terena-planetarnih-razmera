@@ -158,6 +158,7 @@
     <ClCompile Include="src\Core\Galaxy\Galaxy.cpp" />
     <ClCompile Include="src\Core\Logging\Logger.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\Noise.cpp" />
+    <ClCompile Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.cpp" />
     <ClCompile Include="src\Core\ResourceManager\ResourceManager.cpp" />
     <ClCompile Include="src\Core\Scenes\BasicScene.cpp" />
     <ClCompile Include="src\Core\Scenes\PlanetScene.cpp" />
@@ -185,6 +186,7 @@
     <ClCompile Include="src\Graphics\stb.cpp" />
     <ClCompile Include="src\Graphics\Textures\GradientTexture.cpp" />
     <ClCompile Include="src\Graphics\Textures\Texture.cpp" />
+    <ClCompile Include="src\Graphics\Textures\TextureArray.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Vendor\glad.c" />
     <ClCompile Include="src\Vendor\imgui\imgui.cpp" />
@@ -201,6 +203,9 @@
     <ClInclude Include="src\Core\Galaxy\Galaxy.h" />
     <ClInclude Include="src\Core\Logging\Logger.h" />
     <ClInclude Include="src\Core\PlanetGeneration\Noise.h" />
+    <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetNode.h" />
+    <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.h" />
+    <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTreeSettings.h" />
     <ClInclude Include="src\Core\ResourceManager\ResourceManager.h" />
     <ClInclude Include="src\Core\Scenes\BasicScene.h" />
     <ClInclude Include="src\Core\Scenes\PlanetScene.h" />
@@ -239,6 +244,7 @@
     <ClInclude Include="src\Graphics\Textures\GradientTexture.h" />
     <ClInclude Include="src\Graphics\Textures\Texture.h" />
     <ClInclude Include="src\Graphics\Mesh\Mesh.h" />
+    <ClInclude Include="src\Graphics\Textures\TextureArray.h" />
     <ClInclude Include="src\Vendor\imgui\imconfig.h" />
     <ClInclude Include="src\Vendor\imgui\imgui.h" />
     <ClInclude Include="src\Vendor\imgui\imgui_impl_glfw.h" />
@@ -254,6 +260,8 @@
     <None Include="assets\Shaders\planetShader.frag" />
     <None Include="assets\Shaders\planetShader.vert" />
     <None Include="assets\Shaders\position_calculation.glsl" />
+    <None Include="assets\Shaders\simplePlanetShader.frag" />
+    <None Include="assets\Shaders\simplePlanetShader.vert" />
     <None Include="assets\Shaders\skyBoxShader.frag" />
     <None Include="assets\Shaders\skyBoxShader.vert" />
   </ItemGroup>

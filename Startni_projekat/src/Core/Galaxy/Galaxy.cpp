@@ -35,12 +35,12 @@ Galaxy::Galaxy(const Shader& shader)
 
 	cubeMap = rm.GetOrLoadCubeMap("SpaceSkybox1",
 		std::array<const char*, 6>{
-		"assets/Textures/Background/SpaceSkybox1/galaxy+X.png",
+		    /*"assets/Textures/Background/SpaceSkybox1/galaxy+X.png",
 			"assets/Textures/Background/SpaceSkybox1/galaxy-X.png",
 			"assets/Textures/Background/SpaceSkybox1/galaxy+Y.png",
 			"assets/Textures/Background/SpaceSkybox1/galaxy-Y.png",
 			"assets/Textures/Background/SpaceSkybox1/galaxy+Z.png",
-			"assets/Textures/Background/SpaceSkybox1/galaxy-Z.png"
+			"assets/Textures/Background/SpaceSkybox1/galaxy-Z.png"*/
 
 			/*"assets/Textures/Background/SpaceSkybox2/skybox_left.png",
 			"assets/Textures/Background/SpaceSkybox2/skybox_right.png",
@@ -48,6 +48,15 @@ Galaxy::Galaxy(const Shader& shader)
 			"assets/Textures/Background/SpaceSkybox2/skybox_down.png",
 			"assets/Textures/Background/SpaceSkybox2/skybox_front.png",
 			"assets/Textures/Background/SpaceSkybox2/skybox_back.png"*/
+
+			
+			"assets/Textures/Background/SpaceSkybox3/space-posx.jpg",
+			"assets/Textures/Background/SpaceSkybox3/space-negx.jpg",
+			"assets/Textures/Background/SpaceSkybox3/space-posy.jpg",
+			"assets/Textures/Background/SpaceSkybox3/space-negy.jpg",
+			"assets/Textures/Background/SpaceSkybox3/space-posz.jpg",
+			"assets/Textures/Background/SpaceSkybox3/space-negz.jpg",
+			
 	},
 		kSkyboxSlot);
 

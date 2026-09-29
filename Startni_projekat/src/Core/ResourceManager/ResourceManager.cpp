@@ -88,10 +88,32 @@ Texture* ResourceManager::GetTexture(const std::string& name)
     return nullptr;
 }
 
+TextureArray* ResourceManager::GetOrLoadTextureArray(const std::string& name, const std::vector<const char*>& textures, GLuint slot)
+{
+    auto it = textureArrays.find(name);
+    if (it != textureArrays.end())
+        return it->second.get();
+
+    auto textureArray = TextureArray::CreateUnique(textures, slot);
+    TextureArray* rawPtr = textureArray.get();
+    textureArrays[name] = std::move(textureArray);
+    return rawPtr;
+}
+
+TextureArray* ResourceManager::GetTextureArray(const std::string& name)
+{
+    auto it = textureArrays.find(name);
+    if (it != textureArrays.end())
+        return it->second.get();
+
+    return nullptr;
+}
+
 void ResourceManager::ClearAll()
 {
     cubeMaps.clear();
     gradientTextures.clear();
     textures.clear();
+    textureArrays.clear();
     shaders.clear();
 }

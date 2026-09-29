@@ -38,9 +38,6 @@ void PlanetScene::Start()
 	glFrontFace(GL_CCW);
 
 	SendNoiseSettingsToShader();
-
-	shaderPtr->Activate();
-	shaderPtr->setIntArray("perm", noise.GetPermutationTable(), Noise::PermutationTableSize);
 }
 
 void PlanetScene::UpdateSunPosition(float deltaTime)
@@ -100,7 +97,6 @@ void PlanetScene::Update(float deltaTime)
 	sunSettings.lightPtr->SetShaderProgramParameters(*shaderPtr, "dirLight");
 
 	shaderPtr->setInt("resolution", static_cast<int>(planetSettings.resolution));
-	shaderPtr->setIntArray("perm", noise.GetPermutationTable(), Noise::PermutationTableSize);
 }
 
 void PlanetScene::Render()

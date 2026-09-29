@@ -138,6 +138,12 @@
     <ClCompile Include="src\Core\Utils\FileManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Textures\TextureArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Buffers\EBO.h">
@@ -296,6 +302,18 @@
     <ClInclude Include="src\Core\Settings\TextureSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTreeSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Textures\TextureArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Shaders\skyBoxShader.vert" />
@@ -304,5 +322,7 @@
     <None Include="assets\Shaders\planetShader.frag" />
     <None Include="assets\Shaders\noise_evaluation.glsl" />
     <None Include="assets\Shaders\position_calculation.glsl" />
+    <None Include="assets\Shaders\simplePlanetShader.vert" />
+    <None Include="assets\Shaders\simplePlanetShader.frag" />
   </ItemGroup>
 </Project>

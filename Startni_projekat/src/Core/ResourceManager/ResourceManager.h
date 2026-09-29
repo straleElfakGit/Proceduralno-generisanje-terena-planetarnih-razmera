@@ -9,6 +9,7 @@
 #include "Textures/CubeMap.h"
 #include "Textures/GradientTexture.h"
 #include "Textures/Texture.h"
+#include "Textures/TextureArray.h"
 
 class ResourceManager
 {
@@ -17,6 +18,7 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<CubeMap>> cubeMaps;
 	std::unordered_map<std::string, std::unique_ptr<GradientTexture>> gradientTextures;
 	std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
+	std::unordered_map<std::string, std::unique_ptr<TextureArray>> textureArrays;
 
 	ResourceManager() = default;
 	~ResourceManager() { ClearAll(); }
@@ -42,6 +44,9 @@ public:
 
 	Texture* GetOrLoadTexture(const std::string& name, const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType);
 	Texture* GetTexture(const std::string& name);
+
+	TextureArray* GetOrLoadTextureArray(const std::string& name, const std::vector<const char*>& textures, GLuint slot);
+	TextureArray* GetTextureArray(const std::string& name);
 
 	void ClearAll();
 
