@@ -293,6 +293,9 @@
     <ClInclude Include="src\Core\Utils\FileManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\Settings\TextureSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Shaders\skyBoxShader.vert" />

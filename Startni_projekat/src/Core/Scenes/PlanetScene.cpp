@@ -10,6 +10,22 @@ PlanetScene::PlanetScene(ApplicationBase* app) : Scene(app)
 	galaxyShaderPtr = rm.GetOrLoadShader("SkyboxShader", "assets/Shaders/skyBoxShader.vert", "assets/Shaders/skyBoxShader.frag");
 	galaxyPtr = std::make_unique<Galaxy>(*galaxyShaderPtr);
 
+	textures[0] = rm.GetOrLoadTexture("Water", "assets/Textures/Terrain/water.jpg", GL_TEXTURE_2D, 2, GL_RGB, GL_UNSIGNED_BYTE);
+	textures[1] = rm.GetOrLoadTexture("Send", "assets/Textures/Terrain/sand.jpg", GL_TEXTURE_2D, 3, GL_RGB, GL_UNSIGNED_BYTE);
+	textures[2] = rm.GetOrLoadTexture("Grass", "assets/Textures/Terrain/grass.jpg", GL_TEXTURE_2D, 4, GL_RGB, GL_UNSIGNED_BYTE);
+	textures[3] = rm.GetOrLoadTexture("StonyGrass", "assets/Textures/Terrain/stonyGrass.jpg", GL_TEXTURE_2D, 5, GL_RGB, GL_UNSIGNED_BYTE);
+	textures[4] = rm.GetOrLoadTexture("Rock", "assets/Textures/Terrain/rocky.jpg", GL_TEXTURE_2D, 6, GL_RGB, GL_UNSIGNED_BYTE);
+	textures[5] = rm.GetOrLoadTexture("Mountain", "assets/Textures/Terrain/mountains.jpg", GL_TEXTURE_2D, 7, GL_RGB, GL_UNSIGNED_BYTE);
+	textures[6] = rm.GetOrLoadTexture("Snow", "assets/Textures/Terrain/snow.jpg", GL_TEXTURE_2D, 8, GL_RGB, GL_UNSIGNED_BYTE);
+
+	textures[0]->texUnit(*shaderPtr, "texWater", 2);
+	textures[1]->texUnit(*shaderPtr, "texSand", 3);
+	textures[2]->texUnit(*shaderPtr, "texGrass", 4);
+	textures[3]->texUnit(*shaderPtr, "texStonyGrass", 5);
+	textures[3]->texUnit(*shaderPtr, "texRock", 6);
+	textures[5]->texUnit(*shaderPtr, "texMountain", 7);
+	textures[6]->texUnit(*shaderPtr, "texSnow", 8);
+
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 }
@@ -27,14 +43,33 @@ void PlanetScene::Start()
 	shaderPtr->setIntArray("perm", noise.GetPermutationTable(), Noise::PermutationTableSize);
 }
 
-void PlanetScene::UpdateSunPosition()
+void PlanetScene::UpdateSunPosition(float deltaTime)
 {
+	if (sunSettings.rotatePlanet)
+		sunSettings.planetAngle += sunSettings.planetVelocity * deltaTime;
+	else
+		sunSettings.sunAngle += sunSettings.sunVelocity * deltaTime;
+
+	sunSettings.planetAngle = std::fmod(sunSettings.planetAngle, glm::two_pi<float>());
+	sunSettings.sunAngle = std::fmod(sunSettings.sunAngle, glm::two_pi<float>());
+
 	glm::vec3 sunPosition = glm::vec3(
 		std::cos(sunSettings.sunAngle) * sunSettings.sunDistance,
 		sunSettings.sunHeight,
 		std::sin(sunSettings.sunAngle) * sunSettings.sunDistance);
 
 	sunSettings.lightPtr->UpdateDirection(glm::normalize(-sunPosition));
+}
+
+void PlanetScene::UpdateWaterPosition(float deltaTime)
+{
+	textureSettings.waterOffset += textureSettings.waterSpeed * deltaTime;
+	textureSettings.waterOffset.x = std::fmod(textureSettings.waterOffset.x, 1.0f);
+	textureSettings.waterOffset.y = std::fmod(textureSettings.waterOffset.y, 1.0f);
+
+	shaderPtr->Activate();
+
+	shaderPtr->setVec2("waterOffset", textureSettings.waterOffset);
 }
 
 void PlanetScene::Update(float deltaTime)
@@ -46,15 +81,8 @@ void PlanetScene::Update(float deltaTime)
 	if (!io.WantCaptureMouse)
 		cameraPtr->Inputs(win, deltaTime, data->width, data->height);
 
-	if (sunSettings.rotatePlanet)
-		sunSettings.planetAngle += sunSettings.planetVelocity * deltaTime;
-	else
-		sunSettings.sunAngle += sunSettings.sunVelocity * deltaTime;
-
-	sunSettings.planetAngle = std::fmod(sunSettings.planetAngle, glm::two_pi<float>());
-	sunSettings.sunAngle = std::fmod(sunSettings.sunAngle, glm::two_pi<float>());
-
-	UpdateSunPosition();
+	UpdateSunPosition(deltaTime);
+	UpdateWaterPosition(deltaTime);
 
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::rotate(model, sunSettings.planetAngle, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -88,6 +116,9 @@ void PlanetScene::Render()
 
 	shaderPtr->Activate();
 	cameraPtr->Matrix(fov, 0.1f, 1000.0f, *shaderPtr, "camMat", data->width, data->height);
+
+	for (int i = 0; i < 7; i++)
+		textures[i]->Bind();
 
 	if (planetSettings.showMesh)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -144,6 +175,9 @@ void PlanetScene::SendNoiseSettingsToShader()
 	shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
 	shaderPtr->setVec3("noise.center", noiseSettings.center);
 	shaderPtr->setUint("noise.seed", noiseSettings.seed);
+
+	float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
+	shaderPtr->setFloat("maxElevation", maxElevation);
 }
 
 void PlanetScene::RenderNoiseSettings()
@@ -152,12 +186,16 @@ void PlanetScene::RenderNoiseSettings()
 	{
 		shaderPtr->Activate();
 		shaderPtr->setInt("noise.numberOfOctaves", noiseSettings.numberOfOctaves);
+		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
+		shaderPtr->setFloat("maxElevation", maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Strength", &noiseSettings.strength, 0.0f, 2.0f))
 	{
 		shaderPtr->Activate();
 		shaderPtr->setFloat("noise.strength", noiseSettings.strength);
+		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
+		shaderPtr->setFloat("maxElevation", maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Base roughness", &noiseSettings.baseRoughness, 0.1f, 4.0f))
@@ -176,12 +214,16 @@ void PlanetScene::RenderNoiseSettings()
 	{
 		shaderPtr->Activate();
 		shaderPtr->setFloat("noise.persistance", noiseSettings.persistance);
+		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
+		shaderPtr->setFloat("maxElevation", maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Min value", &noiseSettings.minValue, 0.0f, 2.0f))
 	{
 		shaderPtr->Activate();
 		shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
+		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
+		shaderPtr->setFloat("maxElevation", maxElevation);
 	}
 
 	if (ImGui::DragFloat3("Center", glm::value_ptr(noiseSettings.center), 0.01f))
@@ -198,6 +240,12 @@ void PlanetScene::RenderNoiseSettings()
 	}
 }
 
+void PlanetScene::RenderTextureSettings()
+{
+	ImGui::Text("Water Animation");
+	ImGui::SliderFloat2("Water Speed", glm::value_ptr(textureSettings.waterSpeed), -0.1f, 0.1f);
+}
+
 void PlanetScene::OnImGuiRender()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -207,6 +255,9 @@ void PlanetScene::OnImGuiRender()
 
 	if (ImGui::CollapsingHeader("Sun & Lighting"))
 		RenderSunGui();
+
+	if (ImGui::CollapsingHeader("Textures settings"))
+		RenderTextureSettings();
 
 	if (ImGui::CollapsingHeader("Noise settings"))
 		RenderNoiseSettings();

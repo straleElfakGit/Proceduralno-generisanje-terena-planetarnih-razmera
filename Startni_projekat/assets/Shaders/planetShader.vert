@@ -13,6 +13,8 @@ struct NoiseSettings {
 
 out vec3 fragPos;
 out vec3 normal;
+out float elevation;
+out vec3 objectPos;
 
 uniform int resolution;
 uniform mat4 model;

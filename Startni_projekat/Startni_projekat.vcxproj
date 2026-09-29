@@ -209,6 +209,7 @@
     <ClInclude Include="src\Core\Settings\NoiseSettings.h" />
     <ClInclude Include="src\Core\Settings\PlanetSettings.h" />
     <ClInclude Include="src\Core\Settings\SunSettings.h" />
+    <ClInclude Include="src\Core\Settings\TextureSettings.h" />
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Core\Timestep.h" />
     <ClInclude Include="src\Core\Utils\FileManager.h" />

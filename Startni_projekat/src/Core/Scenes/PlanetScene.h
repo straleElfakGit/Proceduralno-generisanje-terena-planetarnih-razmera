@@ -14,6 +14,7 @@
 #include "Settings/PlanetSettings.h"
 #include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
+#include "Settings/TextureSettings.h"
 #include "PlanetGeneration/Noise.h"
 #include "ResourceManager/ResourceManager.h"
 
@@ -26,10 +27,13 @@ private:
     Shader* galaxyShaderPtr;
     std::unique_ptr<Galaxy> galaxyPtr;
 
+    Texture* textures[7] = { nullptr };
+
     GLuint vao;
 
     PlanetSettings planetSettings;
     SunSettings sunSettings;
+    TextureSettings textureSettings;
 
     Noise noise;
     NoiseSettings noiseSettings;
@@ -38,11 +42,13 @@ private:
 
     virtual void OnScroll(double xoffset, double yoffset) override;
 
-    void UpdateSunPosition();
+    void UpdateSunPosition(float deltaTime);
+    void UpdateWaterPosition(float deltaTime);
 
     void RenderPlanetPropertiesGui();
     void RenderSunGui();
     void RenderNoiseSettings();
+    void RenderTextureSettings();
 
     void SendNoiseSettingsToShader();
 

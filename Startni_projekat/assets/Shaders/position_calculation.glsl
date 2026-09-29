@@ -34,6 +34,8 @@ void ElevatedPosition(vec3 localUp, vec3 axisU, vec3 axisV, float u, float v, ou
     vec3 cubePos = localUp + (u * axisU) + (v * axisV);
     vec3 pointOnSphere = SpherifyCube(cubePos);
 
+    objectPos = pointOnSphere;
+
     vec3 noiseGrad = vec3(0.0);
 
     float noiseValue = 0.0f;
@@ -49,13 +51,15 @@ void ElevatedPosition(vec3 localUp, vec3 axisU, vec3 axisV, float u, float v, ou
         amplitude *= noise.persistance;
     }
 
+    elevation = (noiseValue - noise.minValue) * noise.strength;
+
     //float mask = step(noise.minValue, noiseValue);
     float mask = smoothstep(noise.minValue - 0.01, noise.minValue + 0.05, noiseValue);
     noiseValue = max(0.0, noiseValue - noise.minValue);
     noiseGrad *= mask;
 
-    float elevation = 1.0f + (noiseValue * noise.strength);
-    outPos = pointOnSphere * elevation;
+    float finalElevation = 1.0f + (noiseValue * noise.strength);
+    outPos = pointOnSphere * finalElevation;
 
     vec3 tangentGrad = noiseGrad - pointOnSphere * dot(noiseGrad, pointOnSphere);
 
@@ -66,7 +70,7 @@ void ElevatedPosition(vec3 localUp, vec3 axisU, vec3 axisV, float u, float v, ou
         tangentGrad = (tangentGrad / gradLen) * newLen;
     }
 
-    vec3 normal = pointOnSphere - (noise.strength / elevation) * tangentGrad;
+    vec3 normal = pointOnSphere - (noise.strength / finalElevation) * tangentGrad;
     outNormal = normalize(normal);
 }
 

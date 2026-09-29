@@ -13,6 +13,21 @@ struct NoiseSettings
 	glm::vec3 center;
 	int numberOfOctaves = 1;
 	float minValue = 1.0f;
+
+    float CalculateTheoreticalMaxElevation()
+    {
+        float amplitude = 1.0f;
+        float maxValue = 0.0f;
+
+        for (int i = 0; i < numberOfOctaves; i++)
+        {
+            maxValue += amplitude;
+            amplitude *= persistance;
+        }
+
+        maxValue = (maxValue - minValue) * strength;
+        return maxValue;
+    }
 };
 
 #endif // !NOISE_SETTINGS_H
