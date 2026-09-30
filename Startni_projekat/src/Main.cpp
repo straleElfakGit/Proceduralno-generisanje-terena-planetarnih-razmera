@@ -1,7 +1,8 @@
 #include "Core/Application/Application.h"
 #include "Core/Scenes/BasicScene.h"
 #include "Core/Scenes/SceneMenu.h"
-#include "Core/Scenes/PlanetScene.h"
+#include "Core/Scenes/PlanetScenes/PlanetScene.h"
+#include "Core/Scenes/PlanetScenes/TexturePlanetScene.h"
 #include "Logging/Logger.h"
 #include <memory>
 
@@ -19,6 +20,7 @@ int main()
 
 	menu->RegisterScene<BasicScene>("Basic Scene", app);
 	menu->RegisterScene<PlanetScene>("Planet Scene", app);
+	menu->RegisterScene<TexturePlanetScene>("Texture planet Scene", app);
 
 	app->SetMenuScene(menu);
 	app->Run();

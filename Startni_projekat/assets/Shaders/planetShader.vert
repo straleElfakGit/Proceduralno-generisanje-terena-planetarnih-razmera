@@ -72,4 +72,5 @@ void main()
 	fragPos = vec3(worldPos);
 }
 
+
 #include "position_calculation.glsl"

@@ -126,7 +126,7 @@
     <ClCompile Include="src\Core\Galaxy\Galaxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Scenes\PlanetScene.cpp">
+    <ClCompile Include="src\Core\Scenes\PlanetScenes\PlanetScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\PlanetGeneration\Noise.cpp">
@@ -145,6 +145,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\PlanetGeneration\DecoyCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Scenes\PlanetScenes\PlanetSceneBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Scenes\PlanetScenes\TexturePlanetScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -284,7 +290,7 @@
     <ClInclude Include="src\Core\Settings\PlanetSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Scenes\PlanetScene.h">
+    <ClInclude Include="src\Core\Scenes\PlanetScenes\PlanetScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Galaxy\Galaxy.h">
@@ -318,6 +324,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\PlanetGeneration\DecoyCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Scenes\PlanetScenes\PlanetSceneBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Scenes\PlanetScenes\TexturePlanetScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

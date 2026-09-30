@@ -162,7 +162,9 @@
     <ClCompile Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.cpp" />
     <ClCompile Include="src\Core\ResourceManager\ResourceManager.cpp" />
     <ClCompile Include="src\Core\Scenes\BasicScene.cpp" />
-    <ClCompile Include="src\Core\Scenes\PlanetScene.cpp" />
+    <ClCompile Include="src\Core\Scenes\PlanetScenes\PlanetScene.cpp" />
+    <ClCompile Include="src\Core\Scenes\PlanetScenes\PlanetSceneBase.cpp" />
+    <ClCompile Include="src\Core\Scenes\PlanetScenes\TexturePlanetScene.cpp" />
     <ClCompile Include="src\Core\Scenes\SceneMenu.cpp" />
     <ClCompile Include="src\Core\Utils\FileManager.cpp" />
     <ClCompile Include="src\Core\Window\Window.cpp" />
@@ -210,7 +212,9 @@
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTreeSettings.h" />
     <ClInclude Include="src\Core\ResourceManager\ResourceManager.h" />
     <ClInclude Include="src\Core\Scenes\BasicScene.h" />
-    <ClInclude Include="src\Core\Scenes\PlanetScene.h" />
+    <ClInclude Include="src\Core\Scenes\PlanetScenes\PlanetScene.h" />
+    <ClInclude Include="src\Core\Scenes\PlanetScenes\PlanetSceneBase.h" />
+    <ClInclude Include="src\Core\Scenes\PlanetScenes\TexturePlanetScene.h" />
     <ClInclude Include="src\Core\Scenes\Scene.h" />
     <ClInclude Include="src\Core\Scenes\SceneMenu.h" />
     <ClInclude Include="src\Core\Settings\NoiseSettings.h" />

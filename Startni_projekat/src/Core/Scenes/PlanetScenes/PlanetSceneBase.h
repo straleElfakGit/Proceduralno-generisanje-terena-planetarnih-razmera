@@ -1,5 +1,5 @@
-#ifndef PLANET_SCENE_H
-#define PLANET_SCENE_H
+#ifndef PLANET_SCENE_BASE_H
+#define PLANET_SCENE_BASE_H
 
 #include <random>
 
@@ -10,60 +10,47 @@
 #include "Logging/ErrorHandler.h"
 #include "Logging/Logger.h"
 #include "shaderClass.h"
-#include "Scene.h"
+#include "Scenes/Scene.h"
 #include "Settings/PlanetSettings.h"
 #include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
-#include "Settings/TextureSettings.h"
-#include "PlanetGeneration/DecoyCamera.h"
 #include "PlanetGeneration/Noise.h"
-#include "PlanetGeneration/QuadTree/PlanetQuadTree.h"
 #include "ResourceManager/ResourceManager.h"
 
-class PlanetScene : public Scene
+class PlanetSceneBase : public Scene
 {
-private:
+protected:
     Shader* shaderPtr;
     std::unique_ptr<Camera> cameraPtr;
 
     std::unique_ptr<Galaxy> galaxyPtr;
 
-    Texture* textures[7] = { nullptr };
-
     PlanetSettings planetSettings;
     SunSettings sunSettings;
-    TextureSettings textureSettings;
 
     Noise noise;
     NoiseSettings noiseSettings;
 
-    std::unique_ptr<DecoyCamera> decoyCameraPtr;
-
     float fov = 45.0f;
-
-    PlanetQuadTree planetQuadTree;
-    GLuint gridVAO = 0;        
-    GLuint gridEBO = 0;       
-    GLsizei gridIndexCount = 0;
-    GLuint nodeSSBO = 0;
 
     virtual void OnScroll(double xoffset, double yoffset) override;
 
     void UpdateSunPosition(float deltaTime);
-    void UpdateWaterPosition(float deltaTime);
 
-    void RenderPlanetPropertiesGui();
     void RenderSunGui();
     void RenderNoiseSettings();
-    void RenderTextureSettings();
 
     void SendNoiseSettingsToShader();
 
-    void InitGridMesh();                          
-    void UploadSelection(const std::vector<PlanetNode>& sel);
+    virtual void StartSpecific() = 0;
+    virtual void UpdateSpecific(float deltaTime) = 0;
+    virtual void RenderSpecific() = 0;
+    virtual void RenderPlanetPropertiesGui() = 0;
+    virtual void RenderGuiSpecific() = 0;
+
 public:
-    PlanetScene(ApplicationBase* app);
-    virtual ~PlanetScene() override;
+    PlanetSceneBase(ApplicationBase* app);
+    virtual ~PlanetSceneBase() override;
 
     virtual void Start() override;
     virtual void Update(float dt) override;
@@ -72,4 +59,4 @@ public:
     virtual void OnImGuiRender() override;
 };
 
-#endif //!PLANET_SCENE_H
+#endif //!PLANET_SCENE_BASE_H
