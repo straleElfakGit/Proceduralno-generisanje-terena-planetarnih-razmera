@@ -21,13 +21,13 @@ void VAOLayout::DeleteSpecific()
 VAOLayout::VAOLayout()
 {
 	glGenVertexArrays(1, &ID);
-	//LOG_FUNC();
+	LOG_FUNC();
 }
 
 VAOLayout::~VAOLayout()
 {
 	Delete();
-	//LOG_FUNC();
+	LOG_FUNC();
 }
 
 void VAOLayout::addBuffer(const VBO<GLfloat>& vbo, const VertexBufferLayout& layout)

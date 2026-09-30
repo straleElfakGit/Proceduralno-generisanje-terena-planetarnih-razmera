@@ -28,10 +28,10 @@ namespace
 	const GLsizei kIndexCount = sizeof(kIndices) / sizeof(kIndices[0]);
 }
 
-Galaxy::Galaxy(const Shader& shader)
-	: shader(shader)
+Galaxy::Galaxy()
 {
 	ResourceManager& rm = ResourceManager::GetInstance();
+	shaderPtr = rm.GetOrLoadShader("SkyboxShader", "assets/Shaders/skyBoxShader.vert", "assets/Shaders/skyBoxShader.frag");
 
 	cubeMap = rm.GetOrLoadCubeMap("SpaceSkybox1",
 		std::array<const char*, 6>{
@@ -60,7 +60,7 @@ Galaxy::Galaxy(const Shader& shader)
 	},
 		kSkyboxSlot);
 
-	cubeMap->texUnit(shader, "skybox", kSkyboxSlot);
+	cubeMap->texUnit(*shaderPtr, "skybox", kSkyboxSlot);
 
 	vao = std::make_unique<VAOLayout>();
 	vao->Bind();
@@ -81,12 +81,12 @@ void Galaxy::Render(const glm::mat4& view, const glm::mat4& projection) const
 {
 	glDepthFunc(GL_LEQUAL);
 
-	shader.Activate();
+	shaderPtr->Activate();
 
 	const glm::mat4 rotationOnlyView = glm::mat4(glm::mat3(view));
 	const glm::mat4 projview = projection * rotationOnlyView;
 
-	shader.setMat4("projview", projview);
+	shaderPtr->setMat4("projview", projview);
 
 	cubeMap->Bind();
 	vao->Bind();

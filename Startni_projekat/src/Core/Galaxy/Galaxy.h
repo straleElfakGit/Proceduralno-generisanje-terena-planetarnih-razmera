@@ -16,7 +16,7 @@
 class Galaxy
 {
 private:
-	const Shader& shader;
+	Shader* shaderPtr;
 
 	CubeMap* cubeMap;
 	std::unique_ptr<VAOLayout> vao;
@@ -24,7 +24,7 @@ private:
 	std::unique_ptr<EBO<GLuint>> ebo;
 
 public:
-	explicit Galaxy(const Shader& shader);
+	explicit Galaxy();
 	~Galaxy() = default;
 
 	void Render(const glm::mat4& view, const glm::mat4& projection) const;

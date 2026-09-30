@@ -157,6 +157,7 @@
     <ClCompile Include="src\Core\Application\ApplicationBase.cpp" />
     <ClCompile Include="src\Core\Galaxy\Galaxy.cpp" />
     <ClCompile Include="src\Core\Logging\Logger.cpp" />
+    <ClCompile Include="src\Core\PlanetGeneration\DecoyCamera.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\Noise.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.cpp" />
     <ClCompile Include="src\Core\ResourceManager\ResourceManager.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="src\Core\Application\ApplicationBase.h" />
     <ClInclude Include="src\Core\Galaxy\Galaxy.h" />
     <ClInclude Include="src\Core\Logging\Logger.h" />
+    <ClInclude Include="src\Core\PlanetGeneration\DecoyCamera.h" />
     <ClInclude Include="src\Core\PlanetGeneration\Noise.h" />
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetNode.h" />
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.h" />
@@ -260,6 +262,8 @@
     <None Include="assets\Shaders\planetShader.frag" />
     <None Include="assets\Shaders\planetShader.vert" />
     <None Include="assets\Shaders\position_calculation.glsl" />
+    <None Include="assets\Shaders\sateliteShader.frag" />
+    <None Include="assets\Shaders\sateliteShader.vert" />
     <None Include="assets\Shaders\simplePlanetShader.frag" />
     <None Include="assets\Shaders\simplePlanetShader.vert" />
     <None Include="assets\Shaders\simplePlanetShaderNoTree.vert" />

@@ -15,6 +15,7 @@
 #include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
 #include "Settings/TextureSettings.h"
+#include "PlanetGeneration/DecoyCamera.h"
 #include "PlanetGeneration/Noise.h"
 #include "PlanetGeneration/QuadTree/PlanetQuadTree.h"
 #include "ResourceManager/ResourceManager.h"
@@ -25,7 +26,6 @@ private:
     Shader* shaderPtr;
     std::unique_ptr<Camera> cameraPtr;
 
-    Shader* galaxyShaderPtr;
     std::unique_ptr<Galaxy> galaxyPtr;
 
     Texture* textures[7] = { nullptr };
@@ -36,6 +36,8 @@ private:
 
     Noise noise;
     NoiseSettings noiseSettings;
+
+    std::unique_ptr<DecoyCamera> decoyCameraPtr;
 
     float fov = 45.0f;
 

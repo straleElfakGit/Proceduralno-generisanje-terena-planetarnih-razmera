@@ -144,6 +144,9 @@
     <ClCompile Include="src\Graphics\Textures\TextureArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\PlanetGeneration\DecoyCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Buffers\EBO.h">
@@ -314,6 +317,9 @@
     <ClInclude Include="src\Graphics\Textures\TextureArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\PlanetGeneration\DecoyCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Shaders\skyBoxShader.vert" />
@@ -325,5 +331,7 @@
     <None Include="assets\Shaders\simplePlanetShader.vert" />
     <None Include="assets\Shaders\simplePlanetShader.frag" />
     <None Include="assets\Shaders\simplePlanetShaderNoTree.vert" />
+    <None Include="assets\Shaders\sateliteShader.vert" />
+    <None Include="assets\Shaders\sateliteShader.frag" />
   </ItemGroup>
 </Project>

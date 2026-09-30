@@ -5,10 +5,11 @@ PlanetScene::PlanetScene(ApplicationBase* app) : Scene(app)
 	ResourceManager& rm = ResourceManager::GetInstance();
 
 	shaderPtr = rm.GetOrLoadShader("PlanetShader", "assets/Shaders/simplePlanetShader.vert", "assets/Shaders/simplePlanetShader.frag");
-	cameraPtr = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 3.0f));
+	cameraPtr = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 23.0f));
 
-	galaxyShaderPtr = rm.GetOrLoadShader("SkyboxShader", "assets/Shaders/skyBoxShader.vert", "assets/Shaders/skyBoxShader.frag");
-	galaxyPtr = std::make_unique<Galaxy>(*galaxyShaderPtr);
+	galaxyPtr = std::make_unique<Galaxy>();
+
+	decoyCameraPtr = std::make_unique<DecoyCamera>();
 
 	textures[0] = rm.GetOrLoadTexture("Water", "assets/Textures/Terrain/water.jpg", GL_TEXTURE_2D, 2, GL_RGB, GL_UNSIGNED_BYTE);
 	textures[1] = rm.GetOrLoadTexture("Send", "assets/Textures/Terrain/sand.jpg", GL_TEXTURE_2D, 3, GL_RGB, GL_UNSIGNED_BYTE);
@@ -69,6 +70,8 @@ void PlanetScene::Start()
 	planetQuadTree.Configure(qts);
 
 	InitGridMesh();
+
+	decoyCameraPtr->SetRadius(planetSettings.radius * 1.25f);
 }
 
 void PlanetScene::InitGridMesh()
@@ -167,6 +170,7 @@ void PlanetScene::Update(float deltaTime)
 
 	UpdateSunPosition(deltaTime);
 	UpdateWaterPosition(deltaTime);
+	decoyCameraPtr->Update(deltaTime);
 
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::rotate(model, sunSettings.planetAngle, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -190,15 +194,31 @@ void PlanetScene::Update(float deltaTime)
 	glm::mat4 planetTransform = glm::mat4(1.0f);
 	planetTransform = glm::rotate(planetTransform, sunSettings.planetAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	const glm::vec3 cameraWorldPos = cameraPtr->GetPosition();
-	const glm::vec3 cameraLocal = glm::vec3(glm::inverse(planetTransform) * glm::vec4(cameraWorldPos, 1.0f));
+	glm::vec3 activeCamWorldPos;
+	glm::mat4 activeViewMat;
+	glm::mat4 activeProjMat;
+	float activeFov;
 
-	const glm::mat4 viewMat = cameraPtr->GetViewMatrix();
-	const glm::mat4 projectionMat = cameraPtr->GetProjectionMatrix(fov, 0.1f, 1000.0f, data->width, data->height);
+	if (decoyCameraPtr->IsActive())
+	{
+		activeCamWorldPos = decoyCameraPtr->GetPosition();
+		activeViewMat = decoyCameraPtr->GetViewMatrix();
+		activeProjMat = decoyCameraPtr->GetProjectionMatrix(data->width, data->height);
+		activeFov = decoyCameraPtr->GetFOV();
+	}
+	else
+	{
+		activeCamWorldPos = cameraPtr->GetPosition();
+		activeViewMat = cameraPtr->GetViewMatrix();
+		activeProjMat = cameraPtr->GetProjectionMatrix(fov, 0.1f, 1000.0f, data->width, data->height);
+		activeFov = fov;
+	}
+
+	const glm::vec3 cameraLocal = glm::vec3(glm::inverse(planetTransform) * glm::vec4(activeCamWorldPos, 1.0f));
 
 	PlanetView view;
 	view.cameraInLocalPlanetSpace = cameraLocal;
-	view.localToClip = projectionMat * viewMat * planetTransform;
+	view.localToClip = activeProjMat * activeViewMat * planetTransform;
 
 	planetQuadTree.Select(view);
 	UploadSelection(planetQuadTree.GetSelection());
@@ -230,6 +250,10 @@ void PlanetScene::Render()
 		glDrawElementsInstanced(GL_TRIANGLES, gridIndexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	if (decoyCameraPtr->IsActive())
+		decoyCameraPtr->Render(projectionMat, viewMat);
+
 }
 
 void PlanetScene::RenderPlanetPropertiesGui()
@@ -363,6 +387,9 @@ void PlanetScene::OnImGuiRender()
 
 	if (ImGui::CollapsingHeader("Planet Settings"))
 		RenderPlanetPropertiesGui();
+
+	if (ImGui::CollapsingHeader("Culling & Decoy Camera Debug"))
+		decoyCameraPtr->RenderGui();
 
 	if (ImGui::CollapsingHeader("Sun & Lighting"))
 		RenderSunGui();
