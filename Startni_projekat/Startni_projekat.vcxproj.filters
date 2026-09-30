@@ -324,5 +324,6 @@
     <None Include="assets\Shaders\position_calculation.glsl" />
     <None Include="assets\Shaders\simplePlanetShader.vert" />
     <None Include="assets\Shaders\simplePlanetShader.frag" />
+    <None Include="assets\Shaders\simplePlanetShaderNoTree.vert" />
   </ItemGroup>
 </Project>

@@ -16,6 +16,7 @@
 #include "Settings/SunSettings.h"
 #include "Settings/TextureSettings.h"
 #include "PlanetGeneration/Noise.h"
+#include "PlanetGeneration/QuadTree/PlanetQuadTree.h"
 #include "ResourceManager/ResourceManager.h"
 
 class PlanetScene : public Scene
@@ -29,8 +30,6 @@ private:
 
     Texture* textures[7] = { nullptr };
 
-    GLuint vao;
-
     PlanetSettings planetSettings;
     SunSettings sunSettings;
     TextureSettings textureSettings;
@@ -39,6 +38,12 @@ private:
     NoiseSettings noiseSettings;
 
     float fov = 45.0f;
+
+    PlanetQuadTree planetQuadTree;
+    GLuint gridVAO = 0;        
+    GLuint gridEBO = 0;       
+    GLsizei gridIndexCount = 0;
+    GLuint nodeSSBO = 0;
 
     virtual void OnScroll(double xoffset, double yoffset) override;
 
@@ -52,8 +57,11 @@ private:
 
     void SendNoiseSettingsToShader();
 
+    void InitGridMesh();                          
+    void UploadSelection(const std::vector<PlanetNode>& sel);
 public:
     PlanetScene(ApplicationBase* app);
+    virtual ~PlanetScene() override;
 
     virtual void Start() override;
     virtual void Update(float dt) override;
