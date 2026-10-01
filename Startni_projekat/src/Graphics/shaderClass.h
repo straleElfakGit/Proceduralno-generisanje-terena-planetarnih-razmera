@@ -48,6 +48,7 @@ public:
 	void setMatrix(const std::string& name, const glm::mat4& matrix) const;
 
 	void setIntArray(const std::string& name, const int* values, int count) const;
+	void setFloatArray(const std::string& name, const float* values, int count) const;
 
     void setVec2(const std::string& name, const glm::vec2& value) const;
     void setVec2(const std::string& name, float x, float y) const;

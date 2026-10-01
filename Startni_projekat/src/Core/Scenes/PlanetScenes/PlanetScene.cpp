@@ -72,6 +72,8 @@ void PlanetScene::UpdateSpecific(float deltaTime)
 
 	shaderPtr->Activate();
 	shaderPtr->setInt("maxLevel", planetQuadTree.GetSettings().maxLevel);
+	shaderPtr->setFloatArray("morphStart", planetQuadTree.GetMorphStart(), maxPlanetLods);
+	shaderPtr->setFloatArray("morphEnd", planetQuadTree.GetMorphEnd(), maxPlanetLods);
 
 
 	glm::mat4 planetTransform = glm::mat4(1.0f);
