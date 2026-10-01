@@ -172,6 +172,7 @@
     <ClCompile Include="src\Graphics\Buffers\VertexBufferLayout.cpp" />
     <ClCompile Include="src\Core\Logging\ErrorHandler.cpp" />
     <ClCompile Include="src\Graphics\Camera\Camera.cpp" />
+    <ClCompile Include="src\Graphics\Camera\CameraController.cpp" />
     <ClCompile Include="src\Graphics\Textures\CubeMap.cpp" />
     <ClCompile Include="src\Graphics\Deleteable.cpp" />
     <ClCompile Include="src\Graphics\GLResource.cpp" />
@@ -226,6 +227,7 @@
     <ClInclude Include="src\Core\Utils\FileManager.h" />
     <ClInclude Include="src\Core\Window\DefaultWindowConfig.h" />
     <ClInclude Include="src\Core\Window\Window.h" />
+    <ClInclude Include="src\Graphics\Buffers\SSBO.h" />
     <ClInclude Include="src\Graphics\Buffers\VAOLayout.h" />
     <ClInclude Include="src\Core\Logging\ErrorHandler.h" />
     <ClInclude Include="src\Graphics\Buffers\VertexBufferLayout.h" />
@@ -233,6 +235,7 @@
     <ClInclude Include="src\Graphics\Buffers\VAO.h" />
     <ClInclude Include="src\Graphics\Buffers\VBO.h" />
     <ClInclude Include="src\Graphics\Camera\Camera.h" />
+    <ClInclude Include="src\Graphics\Camera\CameraController.h" />
     <ClInclude Include="src\Graphics\Textures\CubeMap.h" />
     <ClInclude Include="src\Graphics\Deleteable.h" />
     <ClInclude Include="src\Graphics\GLResource.h" />

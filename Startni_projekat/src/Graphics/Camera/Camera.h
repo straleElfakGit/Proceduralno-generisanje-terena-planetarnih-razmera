@@ -21,6 +21,7 @@ private:
 	bool firstClick = true;
 
 	float speed = 20.0f;
+	float boostMultiplier = 1.0f;
 	float sensitivity = 100.0f;
 
 	void MouseInput(GLFWwindow* window, int width, int height);
@@ -34,6 +35,9 @@ public:
 	
 	void Inputs(GLFWwindow* window, float deltaTime, int width, int height);
 	void SetPositionToShader(const std::string& uniform, const Shader& shaderProgram);
+
+	void SetSpeed(float newSpeed) { speed = newSpeed; }
+	float GetSpeed() const { return speed; }
 
 	glm::vec3 GetOrientation() const;
 	glm::vec3 GetPosition() const;

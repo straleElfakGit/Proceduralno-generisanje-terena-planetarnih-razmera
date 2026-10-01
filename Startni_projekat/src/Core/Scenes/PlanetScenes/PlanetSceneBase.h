@@ -5,6 +5,7 @@
 
 #include "Application/ApplicationBase.h"
 #include "Camera/Camera.h"
+#include "Camera/CameraController.h"
 #include "Galaxy/Galaxy.h"
 #include "imgui/imgui.h"
 #include "Logging/ErrorHandler.h"
@@ -22,6 +23,10 @@ class PlanetSceneBase : public Scene
 protected:
     Shader* shaderPtr;
     std::unique_ptr<Camera> cameraPtr;
+    
+    static constexpr float cameraFarPlane = 2000.0f;
+    CameraController cameraController;
+    float currentNearPlane = 0.1f;
 
     std::unique_ptr<Galaxy> galaxyPtr;
 
@@ -39,6 +44,7 @@ protected:
 
     void RenderSunGui();
     void RenderNoiseSettings();
+    void RenderCameraGui();
 
     void SendNoiseSettingsToShader();
 

@@ -5,6 +5,9 @@
 #include "PlanetGeneration/DecoyCamera.h"
 #include "PlanetGeneration/Noise.h"
 #include "PlanetGeneration/QuadTree/PlanetQuadTree.h"
+#include "Buffers/VAO.h"
+#include "Buffers/EBO.h"
+#include "Buffers/SSBO.h"
 
 class PlanetScene : public PlanetSceneBase
 {
@@ -12,13 +15,16 @@ private:
     std::unique_ptr<DecoyCamera> decoyCameraPtr;
 
     PlanetQuadTree planetQuadTree;
-    GLuint gridVAO = 0;        
-    GLuint gridEBO = 0;       
+    
+    std::unique_ptr<VAO<GLuint>> gridVAOPtr;
+    std::unique_ptr<EBO<GLuint>> gridEBOPtr;
     GLsizei gridIndexCount = 0;
-    GLuint nodeSSBO = 0;
+    
+    static const GLuint c_NodeSSBOBinding = 0;
+    std::unique_ptr<SSBO<PlanetNode>> nodeSSBOPtr;
+
 
     void InitGridMesh();                          
-    void UploadSelection(const std::vector<PlanetNode>& sel);
 
 protected:
     virtual void StartSpecific() override;
@@ -29,7 +35,7 @@ protected:
 
 public:
     PlanetScene(ApplicationBase* app);
-    virtual ~PlanetScene() override;
+    virtual ~PlanetScene() override = default;
 };
 
 #endif //!PLANET_SCENE_H

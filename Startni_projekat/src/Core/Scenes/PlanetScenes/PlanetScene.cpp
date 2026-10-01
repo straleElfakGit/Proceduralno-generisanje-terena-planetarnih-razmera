@@ -9,27 +9,6 @@ PlanetScene::PlanetScene(ApplicationBase* app) : PlanetSceneBase(app)
 	decoyCameraPtr = std::make_unique<DecoyCamera>();
 }
 
-PlanetScene::~PlanetScene()
-{
-	if (gridVAO != 0)
-	{
-		glDeleteVertexArrays(1, &gridVAO);
-		gridVAO = 0;
-	}
-
-	if (gridEBO != 0)
-	{
-		glDeleteBuffers(1, &gridEBO);
-		gridEBO = 0;
-	}
-
-	if (nodeSSBO != 0)
-	{
-		glDeleteBuffers(1, &nodeSSBO);
-		nodeSSBO = 0;
-	}
-}
-
 void PlanetScene::StartSpecific()
 {
 	PlanetQuadTreeSettings qts;
@@ -44,6 +23,8 @@ void PlanetScene::StartSpecific()
 	planetQuadTree.Configure(qts);
 
 	InitGridMesh();
+
+	nodeSSBOPtr = std::make_unique<SSBO<PlanetNode>>(c_NodeSSBOBinding);
 
 	decoyCameraPtr->SetRadius(planetSettings.radius * 1.25f);
 }
@@ -74,33 +55,12 @@ void PlanetScene::InitGridMesh()
 	}
 	gridIndexCount = static_cast<GLsizei>(indices.size());
 
-	if (gridVAO == 0)
-		glGenVertexArrays(1, &gridVAO);
-	glBindVertexArray(gridVAO);
+	gridVAOPtr = std::make_unique<VAO<GLuint>>();
+	gridVAOPtr->Bind();
 
-	if (gridEBO == 0)
-		glGenBuffers(1, &gridEBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gridEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		static_cast<GLsizeiptr>(indices.size() * sizeof(unsigned int)),
-		indices.data(), GL_STATIC_DRAW);
+	gridEBOPtr = std::make_unique<EBO<GLuint>>(indices);
 
-	glBindVertexArray(0);
-}
-
-void PlanetScene::UploadSelection(const std::vector<PlanetNode>& sel)
-{
-	if (nodeSSBO == 0)
-		glGenBuffers(1, &nodeSSBO);
-
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, nodeSSBO);
-
-	glBufferData(GL_SHADER_STORAGE_BUFFER,
-		static_cast<GLsizeiptr>(sel.size() * sizeof(PlanetNode)),
-		sel.empty() ? nullptr : sel.data(),
-		GL_DYNAMIC_DRAW);
-
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, nodeSSBO);
+	gridVAOPtr->Unbind();
 }
 
 void PlanetScene::UpdateSpecific(float deltaTime)
@@ -133,7 +93,7 @@ void PlanetScene::UpdateSpecific(float deltaTime)
 	{
 		activeCamWorldPos = cameraPtr->GetPosition();
 		activeViewMat = cameraPtr->GetViewMatrix();
-		activeProjMat = cameraPtr->GetProjectionMatrix(fov, 0.1f, 1000.0f, data->width, data->height);
+		activeProjMat = cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
 		activeFov = fov;
 	}
 
@@ -144,7 +104,7 @@ void PlanetScene::UpdateSpecific(float deltaTime)
 	view.localToClip = activeProjMat * activeViewMat * planetTransform;
 
 	planetQuadTree.Select(view);
-	UploadSelection(planetQuadTree.GetSelection());
+	nodeSSBOPtr->Upload(planetQuadTree.GetSelection());
 }
 
 void PlanetScene::RenderSpecific()
@@ -153,15 +113,18 @@ void PlanetScene::RenderSpecific()
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
 	glm::mat4 viewMat = cameraPtr->GetViewMatrix();
-	glm::mat4 projectionMat = cameraPtr->GetProjectionMatrix(fov, 0.1f, 1000.0f, data->width, data->height);
+	glm::mat4 projectionMat = cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
 
 	if (planetSettings.showMesh)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glBindVertexArray(gridVAO);
+	nodeSSBOPtr->Bind();
+
+	gridVAOPtr->Bind();
 	const GLsizei instanceCount = static_cast<GLsizei>(planetQuadTree.GetSelection().size());
 	if (instanceCount > 0)
 		glDrawElementsInstanced(GL_TRIANGLES, gridIndexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+	gridVAOPtr->Unbind();
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

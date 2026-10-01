@@ -43,6 +43,15 @@ void PlanetSceneBase::Update(float deltaTime)
 	GLFWwindow* win = app->GetGLFWWindow();
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
+	PlanetInfluence influence;
+	influence.planetWorldPosition = glm::vec3(0.0f);
+	influence.radius = planetSettings.radius;
+	influence.maxTerrainHeight = planetSettings.radius * noiseSettings.CalculateTheoreticalMaxElevation();
+	cameraController.SetSingleInfluence(influence);
+
+	currentNearPlane = cameraController.ComputeNearPlane(cameraPtr->GetPosition());
+	cameraPtr->SetSpeed(cameraController.ComputeSpeed(cameraPtr->GetPosition()));
+
 	ImGuiIO& io = ImGui::GetIO();
 	if (!io.WantCaptureMouse)
 		cameraPtr->Inputs(win, deltaTime, data->width, data->height);
@@ -77,11 +86,11 @@ void PlanetSceneBase::Render()
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
 	glm::mat4 viewMat = cameraPtr->GetViewMatrix();
-	glm::mat4 projectionMat = cameraPtr->GetProjectionMatrix(fov, 0.1f, 1000.0f, data->width, data->height);
+	glm::mat4 projectionMat = cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
 	galaxyPtr->Render(viewMat, projectionMat);
 
 	shaderPtr->Activate();
-	cameraPtr->Matrix(fov, 0.1f, 1000.0f, *shaderPtr, "camMat", data->width, data->height);
+	cameraPtr->Matrix(fov, currentNearPlane, cameraFarPlane, *shaderPtr, "camMat", data->width, data->height);
 
 	RenderSpecific();
 }
@@ -101,6 +110,26 @@ void PlanetSceneBase::RenderSunGui()
 		sunSettings.planetAngle = 0.0f;
 	}
 }
+
+void PlanetSceneBase::RenderCameraGui()
+{
+	CameraAltitudeSettings& s = cameraController.GetSettingsRef();
+
+	ImGui::Text("Altitude: %.2f", cameraController.GetAltitude(cameraPtr->GetPosition()));
+	ImGui::Text("Current speed: %.2f u/s", cameraPtr->GetSpeed());
+	ImGui::Text("Current near plane: %.3f", currentNearPlane);
+
+	ImGui::Separator();
+	ImGui::SliderFloat("Speed per unit altitude", &s.speedPerUnitAltitude, 0.1f, 20.0f);
+	ImGui::SliderFloat("Min speed", &s.minSpeed, 0.1f, 50.0f);
+	ImGui::SliderFloat("Max speed", &s.maxSpeed, 10.0f, 5000.0f);
+
+	ImGui::Separator();
+	ImGui::SliderFloat("Near per unit altitude", &s.nearPerUnitAltitude, 0.001f, 0.2f);
+	ImGui::SliderFloat("Min near", &s.minNear, 0.01f, 1.0f);
+	ImGui::SliderFloat("Max near", &s.maxNear, 0.5f, 50.0f);
+}
+
 
 void PlanetSceneBase::SendNoiseSettingsToShader()
 {
@@ -185,6 +214,9 @@ void PlanetSceneBase::OnImGuiRender()
 
 	if (ImGui::CollapsingHeader("Planet Settings"))
 		RenderPlanetPropertiesGui();
+
+	if (ImGui::CollapsingHeader("Camera"))
+		RenderCameraGui();
 
 	if (ImGui::CollapsingHeader("Sun & Lighting"))
 		RenderSunGui();

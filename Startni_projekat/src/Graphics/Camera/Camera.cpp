@@ -65,38 +65,38 @@ void Camera::MouseInput(GLFWwindow* window, int width, int height)
 
 void Camera::Inputs(GLFWwindow* window, float deltaTime, int width, int height)
 {
-	float cameraSpeed = 2.5f * deltaTime;
+	const float moveSpeed = deltaTime * speed * boostMultiplier;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		Position += cameraSpeed * speed * Orientation;
+		Position += moveSpeed * Orientation;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		Position += cameraSpeed * speed * -glm::normalize(glm::cross(Orientation, Up));
+		Position += moveSpeed * -glm::normalize(glm::cross(Orientation, Up));
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		Position += cameraSpeed * speed * -Orientation;
+		Position += moveSpeed * -Orientation;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		Position += cameraSpeed * speed * glm::normalize(glm::cross(Orientation, Up));
+		Position += moveSpeed * glm::normalize(glm::cross(Orientation, Up));
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
-		Position += cameraSpeed * speed * Up;
+		Position += moveSpeed * Up;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
-		Position += cameraSpeed * speed * -Up;
+		Position += moveSpeed * -Up;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 	{
-		speed = 2.0f;
+		boostMultiplier = 2.0f;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 	{
-		speed = 1.0f;
+		boostMultiplier = 1.0f;
 	}
 
 	float turnSpeed = 50.0f * deltaTime;
