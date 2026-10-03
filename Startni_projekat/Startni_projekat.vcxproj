@@ -160,6 +160,7 @@
     <ClCompile Include="src\Core\PlanetGeneration\DecoyCamera.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\Noise.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.cpp" />
+    <ClCompile Include="src\Core\PlanetGeneration\TerrainHeightCalculator.cpp" />
     <ClCompile Include="src\Core\ResourceManager\ResourceManager.cpp" />
     <ClCompile Include="src\Core\Scenes\BasicScene.cpp" />
     <ClCompile Include="src\Core\Scenes\PlanetScenes\PlanetScene.cpp" />
@@ -200,6 +201,7 @@
     <ClCompile Include="src\Vendor\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="src\Vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\Vendor\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Graphics\Camera\SurfaceCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Application\Application.h" />
@@ -211,6 +213,7 @@
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetNode.h" />
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.h" />
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTreeSettings.h" />
+    <ClInclude Include="src\Core\PlanetGeneration\TerrainHeightCalculator.h" />
     <ClInclude Include="src\Core\ResourceManager\ResourceManager.h" />
     <ClInclude Include="src\Core\Scenes\BasicScene.h" />
     <ClInclude Include="src\Core\Scenes\PlanetScenes\PlanetScene.h" />
@@ -263,6 +266,7 @@
     <ClInclude Include="src\Vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="src\Vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="src\Vendor\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Graphics\Camera\SurfaceCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Shaders\noise_evaluation.glsl" />

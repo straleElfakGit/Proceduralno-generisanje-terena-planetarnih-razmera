@@ -156,6 +156,12 @@
     <ClCompile Include="src\Graphics\Camera\CameraController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\PlanetGeneration\TerrainHeightCalculator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Camera\SurfaceCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Buffers\EBO.h">
@@ -339,6 +345,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Graphics\Camera\CameraController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\PlanetGeneration\TerrainHeightCalculator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Camera\SurfaceCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

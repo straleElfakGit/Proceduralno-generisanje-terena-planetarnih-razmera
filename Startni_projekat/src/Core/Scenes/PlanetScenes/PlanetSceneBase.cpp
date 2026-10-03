@@ -4,6 +4,14 @@ PlanetSceneBase::PlanetSceneBase(ApplicationBase* app) : Scene(app)
 {
 	cameraPtr = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 23.0f));
 	galaxyPtr = std::make_unique<Galaxy>();
+
+	heightCalculatorPtr = std::make_unique<TerrainHeightCalculator>(&noiseSettings);
+
+	surfaceCameraPtr = std::make_unique<SurfaceCamera>();
+	surfaceCameraPtr->SetHeightCalculator(heightCalculatorPtr.get());
+	surfaceCameraPtr->SetPlanetRadius(planetSettings.radius);
+	surfaceCameraPtr->SetMaxElevationFallback(noiseSettings.CalculateTheoreticalMaxElevation());
+
 }
 
 PlanetSceneBase::~PlanetSceneBase() { }
@@ -43,18 +51,27 @@ void PlanetSceneBase::Update(float deltaTime)
 	GLFWwindow* win = app->GetGLFWWindow();
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
+	UpdateWalkToggle(win);
+
 	PlanetInfluence influence;
 	influence.planetWorldPosition = glm::vec3(0.0f);
 	influence.radius = planetSettings.radius;
 	influence.maxTerrainHeight = planetSettings.radius * noiseSettings.CalculateTheoreticalMaxElevation();
 	cameraController.SetSingleInfluence(influence);
 
-	currentNearPlane = cameraController.ComputeNearPlane(cameraPtr->GetPosition());
-	cameraPtr->SetSpeed(cameraController.ComputeSpeed(cameraPtr->GetPosition()));
+	const glm::vec3 activePos = IsWalking() ? surfaceCameraPtr->GetPosition() : cameraPtr->GetPosition();
+	currentNearPlane = cameraController.ComputeNearPlane(activePos);
+	if (!IsWalking())
+		cameraPtr->SetSpeed(cameraController.ComputeSpeed(activePos));
 
 	ImGuiIO& io = ImGui::GetIO();
 	if (!io.WantCaptureMouse)
-		cameraPtr->Inputs(win, deltaTime, data->width, data->height);
+	{
+		if (IsWalking())
+			surfaceCameraPtr->Inputs(win, deltaTime, data->width, data->height);
+		else
+			cameraPtr->Inputs(win, deltaTime, data->width, data->height);
+	}
 
 	UpdateSunPosition(deltaTime);
 
@@ -68,7 +85,11 @@ void PlanetSceneBase::Update(float deltaTime)
 	glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
 	shaderPtr->setMat3("normalMatrix", normalMatrix);
 
-	cameraPtr->SetPositionToShader("viewPos", *shaderPtr);
+	if (IsWalking())
+		surfaceCameraPtr->SetPositionToShader("viewPos", *shaderPtr);
+	else
+		cameraPtr->SetPositionToShader("viewPos", *shaderPtr);
+
 
 	planetSettings.matPtr->SetShaderProgramParameters(*shaderPtr, "material");
 	sunSettings.lightPtr->SetShaderProgramParameters(*shaderPtr, "dirLight");
@@ -85,12 +106,20 @@ void PlanetSceneBase::Render()
 	GLFWwindow* win = app->GetGLFWWindow();
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
-	glm::mat4 viewMat = cameraPtr->GetViewMatrix();
-	glm::mat4 projectionMat = cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
+	const bool walking = IsWalking();
+
+	glm::mat4 viewMat = walking ? surfaceCameraPtr->GetViewMatrix() : cameraPtr->GetViewMatrix();
+	glm::mat4 projectionMat = walking
+		? surfaceCameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height)
+		: cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
+
 	galaxyPtr->Render(viewMat, projectionMat);
 
 	shaderPtr->Activate();
-	cameraPtr->Matrix(fov, currentNearPlane, cameraFarPlane, *shaderPtr, "camMat", data->width, data->height);
+	if (walking)
+		surfaceCameraPtr->Matrix(fov, currentNearPlane, cameraFarPlane, *shaderPtr, "camMat", data->width, data->height);
+	else
+		cameraPtr->Matrix(fov, currentNearPlane, cameraFarPlane, *shaderPtr, "camMat", data->width, data->height);
 
 	RenderSpecific();
 }
@@ -113,6 +142,20 @@ void PlanetSceneBase::RenderSunGui()
 
 void PlanetSceneBase::RenderCameraGui()
 {
+	ImGui::Text("Mode: %s  (F to toggle)", IsWalking() ? "Walking" : "Free flight");
+	if (ImGui::Button(IsWalking() ? "Switch to free flight" : "Switch to walking"))
+	{
+		if (!IsWalking())
+			surfaceCameraPtr->EnterFromWorld(cameraPtr->GetPosition(), cameraPtr->GetOrientation());
+		else
+		{
+			cameraPtr->SetPosition(surfaceCameraPtr->GetExitPosition());
+			cameraPtr->SetOrientation(surfaceCameraPtr->GetExitOrientation());
+			surfaceCameraPtr->SetActive(false);
+		}
+	}
+
+	ImGui::Separator();
 	CameraAltitudeSettings& s = cameraController.GetSettingsRef();
 
 	ImGui::Text("Altitude: %.2f", cameraController.GetAltitude(cameraPtr->GetPosition()));
@@ -156,6 +199,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		shaderPtr->setInt("noise.numberOfOctaves", noiseSettings.numberOfOctaves);
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
+		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Strength", &noiseSettings.strength, 0.0f, 2.0f))
@@ -164,6 +208,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		shaderPtr->setFloat("noise.strength", noiseSettings.strength);
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
+		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Base roughness", &noiseSettings.baseRoughness, 0.1f, 4.0f))
@@ -184,6 +229,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		shaderPtr->setFloat("noise.persistance", noiseSettings.persistance);
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
+		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Min value", &noiseSettings.minValue, 0.0f, 2.0f))
@@ -192,6 +238,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
+		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
 	}
 
 	if (ImGui::DragFloat3("Center", glm::value_ptr(noiseSettings.center), 0.01f))
@@ -228,6 +275,28 @@ void PlanetSceneBase::OnImGuiRender()
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 }
+
+void PlanetSceneBase::UpdateWalkToggle(GLFWwindow* window)
+{
+	const bool pressed = (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS);
+
+	if (pressed && !walkKeyWasPressed)
+	{
+		if (!IsWalking())
+		{
+			surfaceCameraPtr->EnterFromWorld(cameraPtr->GetPosition(), cameraPtr->GetOrientation());
+		}
+		else
+		{
+			cameraPtr->SetPosition(surfaceCameraPtr->GetExitPosition());
+			cameraPtr->SetOrientation(surfaceCameraPtr->GetExitOrientation());
+			surfaceCameraPtr->SetActive(false);
+		}
+	}
+
+	walkKeyWasPressed = pressed;
+}
+
 
 void PlanetSceneBase::OnScroll(double xoffset, double yoffset)
 {

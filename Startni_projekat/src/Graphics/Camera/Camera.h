@@ -39,6 +39,9 @@ public:
 	void SetSpeed(float newSpeed) { speed = newSpeed; }
 	float GetSpeed() const { return speed; }
 
+	void SetPosition(const glm::vec3& pos) { Position = pos; }
+	void SetOrientation(const glm::vec3& dir) { Orientation = glm::normalize(dir); }
+
 	glm::vec3 GetOrientation() const;
 	glm::vec3 GetPosition() const;
 };

@@ -6,6 +6,7 @@
 #include "Application/ApplicationBase.h"
 #include "Camera/Camera.h"
 #include "Camera/CameraController.h"
+#include "Camera/SurfaceCamera.h"
 #include "Galaxy/Galaxy.h"
 #include "imgui/imgui.h"
 #include "Logging/ErrorHandler.h"
@@ -16,6 +17,7 @@
 #include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
 #include "PlanetGeneration/Noise.h"
+#include "PlanetGeneration/TerrainHeightCalculator.h"
 #include "ResourceManager/ResourceManager.h"
 
 class PlanetSceneBase : public Scene
@@ -36,6 +38,10 @@ protected:
     Noise noise;
     NoiseSettings noiseSettings;
 
+    std::unique_ptr<SurfaceCamera> surfaceCameraPtr;
+    std::unique_ptr<TerrainHeightCalculator> heightCalculatorPtr;
+    bool walkKeyWasPressed = false;
+
     float fov = 45.0f;
 
     virtual void OnScroll(double xoffset, double yoffset) override;
@@ -47,6 +53,9 @@ protected:
     void RenderCameraGui();
 
     void SendNoiseSettingsToShader();
+
+    bool IsWalking() const { return surfaceCameraPtr && surfaceCameraPtr->IsActive(); }
+    void UpdateWalkToggle(GLFWwindow* window);
 
     virtual void StartSpecific() = 0;
     virtual void UpdateSpecific(float deltaTime) = 0;

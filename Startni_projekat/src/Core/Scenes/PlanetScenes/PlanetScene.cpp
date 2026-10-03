@@ -82,21 +82,24 @@ void PlanetScene::UpdateSpecific(float deltaTime)
 	glm::vec3 activeCamWorldPos;
 	glm::mat4 activeViewMat;
 	glm::mat4 activeProjMat;
-	float activeFov;
 
 	if (decoyCameraPtr->IsActive())
 	{
 		activeCamWorldPos = decoyCameraPtr->GetPosition();
 		activeViewMat = decoyCameraPtr->GetViewMatrix();
 		activeProjMat = decoyCameraPtr->GetProjectionMatrix(data->width, data->height);
-		activeFov = decoyCameraPtr->GetFOV();
+	}
+	else if (IsWalking())
+	{
+		activeCamWorldPos = surfaceCameraPtr->GetPosition();
+		activeViewMat = surfaceCameraPtr->GetViewMatrix();
+		activeProjMat = surfaceCameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
 	}
 	else
 	{
 		activeCamWorldPos = cameraPtr->GetPosition();
 		activeViewMat = cameraPtr->GetViewMatrix();
 		activeProjMat = cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
-		activeFov = fov;
 	}
 
 	const glm::vec3 cameraLocal = glm::vec3(glm::inverse(planetTransform) * glm::vec4(activeCamWorldPos, 1.0f));
@@ -114,8 +117,12 @@ void PlanetScene::RenderSpecific()
 	GLFWwindow* win = app->GetGLFWWindow();
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
-	glm::mat4 viewMat = cameraPtr->GetViewMatrix();
-	glm::mat4 projectionMat = cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
+	glm::mat4 viewMat = IsWalking()
+		? surfaceCameraPtr->GetViewMatrix()
+		: cameraPtr->GetViewMatrix();
+	glm::mat4 projectionMat = IsWalking()
+		? surfaceCameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height)
+		: cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
 
 	if (planetSettings.showMesh)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -157,6 +164,9 @@ void PlanetScene::RenderPlanetPropertiesGui()
 		PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
 		qts.planetRadius = currentRadius;
 		planetQuadTree.Configure(qts);
+
+		surfaceCameraPtr->SetPlanetRadius(currentRadius);
+		decoyCameraPtr->SetRadius(currentRadius * 1.25f);
 	}
 }
 
