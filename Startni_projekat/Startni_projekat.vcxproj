@@ -221,6 +221,9 @@
     <ClInclude Include="src\Core\Scenes\PlanetScenes\TexturePlanetScene.h" />
     <ClInclude Include="src\Core\Scenes\Scene.h" />
     <ClInclude Include="src\Core\Scenes\SceneMenu.h" />
+    <ClInclude Include="src\Core\Settings\BiomColorSettings.h" />
+    <ClInclude Include="src\Core\Settings\ColorSettings.h" />
+    <ClInclude Include="src\Core\Settings\Gradient.h" />
     <ClInclude Include="src\Core\Settings\NoiseSettings.h" />
     <ClInclude Include="src\Core\Settings\PlanetSettings.h" />
     <ClInclude Include="src\Core\Settings\SunSettings.h" />
