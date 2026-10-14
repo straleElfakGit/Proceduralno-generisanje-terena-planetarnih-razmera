@@ -6,7 +6,7 @@
 
 struct PlanetSettings
 {
-	float radius = 10.0f;
+	float radius = 100.0f;
 	unsigned int resolution = 32;
 	bool showMesh = false;
 

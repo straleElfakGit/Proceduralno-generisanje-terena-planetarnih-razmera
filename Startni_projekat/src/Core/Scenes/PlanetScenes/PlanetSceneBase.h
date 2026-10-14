@@ -62,6 +62,7 @@ protected:
     virtual void RenderSpecific() = 0;
     virtual void RenderPlanetPropertiesGui() = 0;
     virtual void RenderGuiSpecific() = 0;
+    virtual void SetMaxElevation(float maxElevation) = 0;
 
 public:
     PlanetSceneBase(ApplicationBase* app);

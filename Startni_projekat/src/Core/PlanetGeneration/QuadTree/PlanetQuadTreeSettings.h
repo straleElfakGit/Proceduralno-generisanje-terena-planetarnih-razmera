@@ -5,7 +5,7 @@
 
 struct PlanetQuadTreeSettings
 {
-	float planetRadius = 50.0f;
+	float planetRadius = 100.0f;
 	int maxLevel = 9;
 	int nodeResolution = 32;
 	float lodRangeFactor = 6.0f;

@@ -2,7 +2,7 @@
 
 PlanetSceneBase::PlanetSceneBase(ApplicationBase* app) : Scene(app)
 {
-	cameraPtr = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 23.0f));
+	cameraPtr = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 250.0f));
 	galaxyPtr = std::make_unique<Galaxy>();
 
 	heightCalculatorPtr = std::make_unique<TerrainHeightCalculator>(&noiseSettings);
@@ -200,6 +200,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
 		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
+		SetMaxElevation(maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Strength", &noiseSettings.strength, 0.0f, 2.0f))
@@ -209,6 +210,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
 		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
+		SetMaxElevation(maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Base roughness", &noiseSettings.baseRoughness, 0.1f, 4.0f))
@@ -230,6 +232,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
 		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
+		SetMaxElevation(maxElevation);
 	}
 
 	if (ImGui::SliderFloat("Min value", &noiseSettings.minValue, 0.0f, 2.0f))
@@ -239,6 +242,7 @@ void PlanetSceneBase::RenderNoiseSettings()
 		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
 		shaderPtr->setFloat("maxElevation", maxElevation);
 		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
+		SetMaxElevation(maxElevation);
 	}
 
 	if (ImGui::DragFloat3("Center", glm::value_ptr(noiseSettings.center), 0.01f))

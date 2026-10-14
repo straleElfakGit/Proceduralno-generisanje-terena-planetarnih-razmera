@@ -32,6 +32,7 @@ protected:
     virtual void RenderSpecific() override;
     virtual void RenderPlanetPropertiesGui() override;
     virtual void RenderGuiSpecific() override;
+    virtual void SetMaxElevation(float maxElevation) override;
 
 public:
     PlanetScene(ApplicationBase* app);

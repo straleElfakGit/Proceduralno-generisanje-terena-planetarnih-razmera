@@ -65,7 +65,7 @@ glm::vec4 TerrainHeightCalculator::Noised(const glm::vec3& x) const
 
 float TerrainHeightCalculator::ElevationAt(const glm::vec3& pointOnUnitSphere) const
 {
-	return 1.0f;
+	//return 1.0f;
 	float noiseValue = 0.0f;
 	float frequency = settings->baseRoughness;
 	float amplitude = 1.0f;

@@ -170,6 +170,13 @@ void PlanetScene::RenderPlanetPropertiesGui()
 	}
 }
 
+void PlanetScene::SetMaxElevation(float maxElevation)
+{
+	/*PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
+	qts.heightMax = maxElevation;
+	planetQuadTree.Configure(qts);*/
+}
+
 void PlanetScene::RenderGuiSpecific()
 {
 	if (ImGui::CollapsingHeader("Culling & Decoy Camera Debug"))
