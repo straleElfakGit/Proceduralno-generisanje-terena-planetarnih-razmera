@@ -9,15 +9,24 @@ PlanetScene::PlanetScene(ApplicationBase* app) : PlanetSceneBase(app)
 	decoyCameraPtr = std::make_unique<DecoyCamera>();
 }
 
+int PlanetScene::ComputeMaxLevelForRadius(float radius) const
+{
+	const float approxRootSize = 2.0f * std::max(radius, 0.001f);
+	const float ratio = std::max(approxRootSize / targetLeafSize, 1.0f);
+	const int computed = static_cast<int>(std::ceil(std::log2(ratio)));
+
+	return glm::clamp(computed, 2, maxPlanetLods - 1);
+}
+
 void PlanetScene::StartSpecific()
 {
 	PlanetQuadTreeSettings qts;
 	qts.planetRadius = planetSettings.radius;
-	qts.maxLevel = 8;                                     
+	qts.maxLevel = ComputeMaxLevelForRadius(planetSettings.radius);
 	qts.nodeResolution = static_cast<int>(planetSettings.resolution);
 	qts.lodRangeFactor = 6.0f;
 	qts.morphStartRatio = 0.5f;
-	qts.heightMax = 0.0f;                                 
+	qts.heightMax = cachedMaxElevation;
 	qts.frustumCulling = true;
 	qts.horizonCulling = true;
 	planetQuadTree.Configure(qts);
@@ -163,6 +172,7 @@ void PlanetScene::RenderPlanetPropertiesGui()
 		LOG_INFO("Radius set to {}", planetSettings.radius);
 		PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
 		qts.planetRadius = currentRadius;
+		qts.maxLevel = ComputeMaxLevelForRadius(currentRadius);
 		planetQuadTree.Configure(qts);
 
 		surfaceCameraPtr->SetPlanetRadius(currentRadius);
@@ -171,6 +181,13 @@ void PlanetScene::RenderPlanetPropertiesGui()
 }
 
 void PlanetScene::SetMaxElevation(float maxElevation)
+{
+	/*PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
+	qts.heightMax = maxElevation;
+	planetQuadTree.Configure(qts);*/
+}
+
+void PlanetScene::OnMaxElevationChanged(float maxElevation)
 {
 	/*PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
 	qts.heightMax = maxElevation;

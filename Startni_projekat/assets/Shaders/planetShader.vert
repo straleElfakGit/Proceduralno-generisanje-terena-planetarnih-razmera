@@ -12,15 +12,13 @@ struct NoiseSettings {
 };
 
 out vec3 fragPos;
-out vec3 normal;
 out float elevation;
 out vec3 objectPos;
+out vec3 objectNormal;
 
 uniform int resolution;
 uniform mat4 model;
 uniform mat4 camMat;
-uniform mat3 normalMatrix;
-
 uniform NoiseSettings noise;
 
 const vec2 QUAD_OFFSET[6] = vec2[6] (
@@ -68,9 +66,9 @@ void main()
 	vec4 worldPos = model * vec4(aPos, 1.0f);
 	gl_Position = camMat * worldPos;
 
-    normal = normalMatrix * aNormal; 
 	fragPos = vec3(worldPos);
-}
 
+    objectNormal = aNormal;
+}
 
 #include "position_calculation.glsl"

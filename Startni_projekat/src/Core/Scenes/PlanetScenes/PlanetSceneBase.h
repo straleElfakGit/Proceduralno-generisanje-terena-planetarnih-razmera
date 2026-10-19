@@ -1,6 +1,7 @@
 #ifndef PLANET_SCENE_BASE_H
 #define PLANET_SCENE_BASE_H
 
+#include <future>
 #include <random>
 
 #include "Application/ApplicationBase.h"
@@ -23,7 +24,7 @@
 class PlanetSceneBase : public Scene
 {
 protected:
-    Shader* shaderPtr;
+    Shader* shaderPtr = nullptr;
     std::unique_ptr<Camera> cameraPtr;
     
     static constexpr float cameraFarPlane = 2000.0f;
@@ -42,6 +43,16 @@ protected:
     std::unique_ptr<TerrainHeightCalculator> heightCalculatorPtr;
     bool walkKeyWasPressed = false;
 
+    static const int   rangeSamples = 4096;
+    static constexpr float cameraMargin = 1.25f;
+    static constexpr float shadingMargin = 1.05f;
+
+    float cachedMaxElevation = 0.0f;
+    glm::vec2 elevationRange = glm::vec2(-0.1f, 1.0f);
+
+    std::future<ElevationRange> rangeFuture;
+    bool rangeDirty = false;
+
     float fov = 45.0f;
 
     virtual void OnScroll(double xoffset, double yoffset) override;
@@ -57,6 +68,13 @@ protected:
     bool IsWalking() const { return surfaceCameraPtr && surfaceCameraPtr->IsActive(); }
     void UpdateWalkToggle(GLFWwindow* window);
 
+    void RefreshMaxElevationCache();
+
+    void RequestElevationRefresh() { rangeDirty = true; }
+    void PollElevationRange();
+    void ApplyElevationRange(const ElevationRange& range);
+
+    virtual void OnMaxElevationChanged(float maxElevation) = 0;
     virtual void StartSpecific() = 0;
     virtual void UpdateSpecific(float deltaTime) = 0;
     virtual void RenderSpecific() = 0;

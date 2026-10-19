@@ -45,7 +45,7 @@ public:
 	Texture* GetOrLoadTexture(const std::string& name, const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType);
 	Texture* GetTexture(const std::string& name);
 
-	TextureArray* GetOrLoadTextureArray(const std::string& name, const std::vector<const char*>& textures, GLuint slot);
+	TextureArray* GetOrLoadTextureArray(const std::string& name, const std::vector<const char*>& textures, GLuint slot, bool srgb);
 	TextureArray* GetTextureArray(const std::string& name);
 
 	void ClearAll();

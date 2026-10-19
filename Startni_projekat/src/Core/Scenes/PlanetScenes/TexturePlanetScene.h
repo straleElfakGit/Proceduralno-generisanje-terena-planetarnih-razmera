@@ -15,16 +15,26 @@
 class TexturePlanetScene: public PlanetSceneBase
 {
 private:
-    Texture* textures[7] = { nullptr };
+    static const GLuint waterUnit = 2;
+    static const GLuint noiseUnit = 3;
+    static const GLuint diffuseUnit = 4;
+    static const GLuint normalUnit = 5;
+
+    Texture* waterTexture = nullptr;
+    Texture* noiseTexture = nullptr;
+    TextureArray* diffuseArray;
+    TextureArray* normalArray;
 
     TextureSettings textureSettings;
 
     GLuint vao;
 
     void UpdateWaterPosition(float deltaTime);
+    void SendTextureSettingsToShader();
     void RenderTextureSettings();
 
 protected:
+    virtual void OnMaxElevationChanged(float maxElevation) override {};
     virtual void StartSpecific() override {}
     virtual void UpdateSpecific(float deltaTime) override;
     virtual void RenderSpecific() override;

@@ -10,11 +10,55 @@ PlanetSceneBase::PlanetSceneBase(ApplicationBase* app) : Scene(app)
 	surfaceCameraPtr = std::make_unique<SurfaceCamera>();
 	surfaceCameraPtr->SetHeightCalculator(heightCalculatorPtr.get());
 	surfaceCameraPtr->SetPlanetRadius(planetSettings.radius);
-	surfaceCameraPtr->SetMaxElevationFallback(noiseSettings.CalculateTheoreticalMaxElevation());
 
+	RefreshMaxElevationCache();
 }
 
 PlanetSceneBase::~PlanetSceneBase() { }
+
+void PlanetSceneBase::ApplyElevationRange(const ElevationRange& range)
+{
+	LOG_FUNC();
+	cachedMaxElevation = std::max(range.maxElevation, 0.0f) * cameraMargin;
+	surfaceCameraPtr->SetMaxElevationFallback(cachedMaxElevation);
+
+	elevationRange.x = std::min(range.minElevation, -1e-3f);
+	elevationRange.y = std::max(range.maxElevation * shadingMargin, 1e-3f);
+
+	if (shaderPtr)
+	{
+		LOG_INFO("Evaluate range applyed max = {}, min = {}", elevationRange.x, elevationRange.y);
+		shaderPtr->Activate();
+		shaderPtr->setVec2("heightRange", elevationRange);
+	}
+}
+
+void PlanetSceneBase::RefreshMaxElevationCache()
+{
+	ApplyElevationRange(heightCalculatorPtr->EstimateElevationRange(rangeSamples));
+}
+
+void PlanetSceneBase::PollElevationRange()
+{
+	if (rangeFuture.valid() &&
+		rangeFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+	{
+		ApplyElevationRange(rangeFuture.get());
+		OnMaxElevationChanged(cachedMaxElevation);
+	}
+
+	if (rangeDirty && !rangeFuture.valid())
+	{
+		rangeDirty = false;
+
+		rangeFuture = std::async(std::launch::async, [snapshot = noiseSettings]()
+			{
+				TerrainHeightCalculator calc(&snapshot);
+				return calc.EstimateElevationRange(rangeSamples);
+			});
+	}
+}
+
 
 void PlanetSceneBase::Start()
 {
@@ -51,12 +95,13 @@ void PlanetSceneBase::Update(float deltaTime)
 	GLFWwindow* win = app->GetGLFWWindow();
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
+	PollElevationRange();
 	UpdateWalkToggle(win);
 
 	PlanetInfluence influence;
 	influence.planetWorldPosition = glm::vec3(0.0f);
 	influence.radius = planetSettings.radius;
-	influence.maxTerrainHeight = planetSettings.radius * noiseSettings.CalculateTheoreticalMaxElevation();
+	influence.maxTerrainHeight = planetSettings.radius * cachedMaxElevation;
 	cameraController.SetSingleInfluence(influence);
 
 	const glm::vec3 activePos = IsWalking() ? surfaceCameraPtr->GetPosition() : cameraPtr->GetPosition();
@@ -187,75 +232,33 @@ void PlanetSceneBase::SendNoiseSettingsToShader()
 	shaderPtr->setVec3("noise.center", noiseSettings.center);
 	shaderPtr->setUint("noise.seed", noiseSettings.seed);
 
-	float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
-	shaderPtr->setFloat("maxElevation", maxElevation);
+	shaderPtr->setFloat("maxElevation", noiseSettings.CalculateTheoreticalMaxElevation());
+	shaderPtr->setVec2("heightRange", elevationRange);
 }
 
 void PlanetSceneBase::RenderNoiseSettings()
 {
-	if (ImGui::SliderInt("Number of octavs", &noiseSettings.numberOfOctaves, 1, 8))
-	{
-		shaderPtr->Activate();
-		shaderPtr->setInt("noise.numberOfOctaves", noiseSettings.numberOfOctaves);
-		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
-		shaderPtr->setFloat("maxElevation", maxElevation);
-		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
-		SetMaxElevation(maxElevation);
-	}
+	bool changed = false;
 
-	if (ImGui::SliderFloat("Strength", &noiseSettings.strength, 0.0f, 2.0f))
-	{
-		shaderPtr->Activate();
-		shaderPtr->setFloat("noise.strength", noiseSettings.strength);
-		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
-		shaderPtr->setFloat("maxElevation", maxElevation);
-		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
-		SetMaxElevation(maxElevation);
-	}
+	changed |= ImGui::SliderInt("Number of octavs", &noiseSettings.numberOfOctaves, 1, 8);
+	changed |= ImGui::SliderFloat("Strength", &noiseSettings.strength, 0.0f, 2.0f);
+	changed |= ImGui::SliderFloat("Base roughness", &noiseSettings.baseRoughness, 0.1f, 4.0f);
+	changed |= ImGui::SliderFloat("Roughness", &noiseSettings.roughness, 1.0f, 4.0f);
+	changed |= ImGui::SliderFloat("Persistance", &noiseSettings.persistance, 0.0f, 1.0f);
+	changed |= ImGui::SliderFloat("Min value", &noiseSettings.minValue, 0.0f, 2.0f);
+	changed |= ImGui::DragFloat3("Center", glm::value_ptr(noiseSettings.center), 0.01f);
 
-	if (ImGui::SliderFloat("Base roughness", &noiseSettings.baseRoughness, 0.1f, 4.0f))
-	{
-		shaderPtr->Activate();
-		shaderPtr->setFloat("noise.baseRoughness", noiseSettings.baseRoughness);
-	}
-
-	if (ImGui::SliderFloat("Roughness", &noiseSettings.roughness, 1.0f, 4.0f))
-	{
-		shaderPtr->Activate();
-		shaderPtr->setFloat("noise.roughness", noiseSettings.roughness);
-	}
-
-	if (ImGui::SliderFloat("Persistance", &noiseSettings.persistance, 0.0f, 1.0f))
-	{
-		shaderPtr->Activate();
-		shaderPtr->setFloat("noise.persistance", noiseSettings.persistance);
-		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
-		shaderPtr->setFloat("maxElevation", maxElevation);
-		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
-		SetMaxElevation(maxElevation);
-	}
-
-	if (ImGui::SliderFloat("Min value", &noiseSettings.minValue, 0.0f, 2.0f))
-	{
-		shaderPtr->Activate();
-		shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
-		float maxElevation = noiseSettings.CalculateTheoreticalMaxElevation();
-		shaderPtr->setFloat("maxElevation", maxElevation);
-		surfaceCameraPtr->SetMaxElevationFallback(maxElevation);
-		SetMaxElevation(maxElevation);
-	}
-
-	if (ImGui::DragFloat3("Center", glm::value_ptr(noiseSettings.center), 0.01f))
-	{
-		shaderPtr->Activate();
-		shaderPtr->setVec3("noise.center", noiseSettings.center);
-	}
 	if (ImGui::Button("Randomize Seed"))
 	{
 		std::random_device rd;
 		noiseSettings.seed = static_cast<unsigned int>(rd());
-		shaderPtr->Activate();
-		shaderPtr->setUint("noise.seed", noiseSettings.seed);
+		changed = true;
+	}
+
+	if (changed)
+	{
+		SendNoiseSettingsToShader();
+		RequestElevationRefresh();
 	}
 }
 
@@ -277,6 +280,7 @@ void PlanetSceneBase::OnImGuiRender()
 
 	RenderGuiSpecific();
 
+	ImGui::Text("Elevation range: %.3f .. %.3f", elevationRange.x, elevationRange.y);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 }
 

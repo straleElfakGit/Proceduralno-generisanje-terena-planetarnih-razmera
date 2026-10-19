@@ -23,6 +23,8 @@ public:
 	Texture(const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType);
 	~Texture();
 
+	void SetFilter(GLenum minFilter, GLenum magFilter);
+
 	void texUnit(const Shader& shader, const char* uniform, GLuint unit);
 	
 	virtual void Bind() const override;

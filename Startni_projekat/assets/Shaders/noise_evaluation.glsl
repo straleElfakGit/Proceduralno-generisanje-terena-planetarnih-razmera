@@ -16,7 +16,8 @@ vec4 Noised(vec3 x)
 {
     vec3 p = floor(x);
     vec3 w = fract(x);
-    vec3 u = w * w * (3.0 - 2.0 * w);
+    //vec3 u = w * w * (3.0 - 2.0 * w);
+    vec3 u = w * w * w * (6.0 * w * w - 15.0 * w + 10.0);
     vec3 du = 6.0 * w * (1.0 - w);
 
     float n = p.x + p.y * 157.0 + 113.0 * p.z;

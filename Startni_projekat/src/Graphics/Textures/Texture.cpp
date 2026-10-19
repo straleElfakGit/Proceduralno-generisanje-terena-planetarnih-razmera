@@ -53,9 +53,19 @@ Texture::~Texture()
 
 void Texture::texUnit(const Shader& shader, const char* uniform, GLuint unit)
 {
-	GLuint texUni = shader.GetUniformLocation(uniform);
+	GLint texUni = shader.GetUniformLocation(uniform);
 	shader.Activate();
-	glUniform1i(texUni, unit);
+	if (texUni >= 0)
+		glUniform1i(texUni, static_cast<GLint>(unit));
+}
+
+void Texture::SetFilter(GLenum minFilter, GLenum magFilter)
+{
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(type, ID);
+	glTexParameteri(type, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTexParameteri(type, GL_TEXTURE_MAG_FILTER, magFilter);
+	glBindTexture(type, 0);
 }
 
 void Texture::Bind() const

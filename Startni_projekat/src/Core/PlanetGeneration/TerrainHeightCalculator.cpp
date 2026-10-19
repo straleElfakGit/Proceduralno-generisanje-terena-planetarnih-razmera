@@ -26,7 +26,7 @@ glm::vec4 TerrainHeightCalculator::Noised(const glm::vec3& x) const
 {
 	glm::vec3 p = glm::floor(x);
 	glm::vec3 w = x - p;
-	glm::vec3 u = w * w * (3.0f - 2.0f * w);
+	glm::vec3 u = w * w * w * (6.0f * w * w - 15.0f * w + 10.0f);
 	glm::vec3 du = 6.0f * w * (1.0f - w);
 
 	float n = p.x + p.y * 157.0f + 113.0f * p.z;
@@ -63,22 +63,62 @@ glm::vec4 TerrainHeightCalculator::Noised(const glm::vec3& x) const
 	return glm::vec4(value, grad.x, grad.y, grad.z);
 }
 
-float TerrainHeightCalculator::ElevationAt(const glm::vec3& pointOnUnitSphere) const
+float TerrainHeightCalculator::NoiseSum(const glm::vec3& pointOnUnitSphere) const
 {
-	//return 1.0f;
 	float noiseValue = 0.0f;
 	float frequency = settings->baseRoughness;
 	float amplitude = 1.0f;
 
 	for (int i = 1; i <= settings->numberOfOctaves; ++i)
 	{
-		glm::vec4 val = Noised(pointOnUnitSphere * frequency + settings->center);
-		noiseValue += val.x * amplitude;
+		noiseValue += Noised(pointOnUnitSphere * frequency + settings->center).x * amplitude;
 		frequency *= settings->roughness;
 		amplitude *= settings->persistance;
 	}
 
-	noiseValue = std::max(0.0f, noiseValue - settings->minValue);
+	return noiseValue;
+}
+
+
+float TerrainHeightCalculator::ElevationAt(const glm::vec3& pointOnUnitSphere) const
+{
+	const float noiseValue = std::max(0.0f, NoiseSum(pointOnUnitSphere) - settings->minValue);
 	return 1.0f + noiseValue * settings->strength;
 }
 
+float TerrainHeightCalculator::RawElevationAt(const glm::vec3& pointOnUnitSphere) const
+{
+	return (NoiseSum(pointOnUnitSphere) - settings->minValue) * settings->strength;
+}
+
+ElevationRange TerrainHeightCalculator::EstimateElevationRange(int sampleCount) const
+{
+	ElevationRange range;
+	if (sampleCount < 1)
+		return range;
+
+	range.minElevation = FLT_MAX;
+	range.maxElevation = -FLT_MAX;
+
+	const float goldenAngle = 3.14159265358979f * (3.0f - std::sqrt(5.0f));
+	for (int i = 0; i < sampleCount; i++)
+	{
+		const float uv = 1.0f - (2.0f * i + 1.0f) / static_cast<float>(sampleCount);
+
+		const float ringRadius = std::sqrt(std::max(0.0f, 1.0f - uv * uv));
+		const float theta = goldenAngle * static_cast<float>(i);
+
+		const glm::vec3 dir(std::cos(theta) * ringRadius, uv, std::sin(theta) * ringRadius);
+
+		const float e = RawElevationAt(dir);
+		range.minElevation = std::min(range.minElevation, e);
+		range.maxElevation = std::max(range.maxElevation, e);
+	}
+
+	return range;
+}
+
+float TerrainHeightCalculator::EstimateMaxElevation(int sampleCount, float safetyMargin) const
+{
+	return std::max(0.0f, EstimateElevationRange(sampleCount).maxElevation) * safetyMargin;
+}

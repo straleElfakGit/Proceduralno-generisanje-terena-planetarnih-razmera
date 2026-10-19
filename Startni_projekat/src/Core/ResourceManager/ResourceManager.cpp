@@ -88,13 +88,13 @@ Texture* ResourceManager::GetTexture(const std::string& name)
     return nullptr;
 }
 
-TextureArray* ResourceManager::GetOrLoadTextureArray(const std::string& name, const std::vector<const char*>& textures, GLuint slot)
+TextureArray* ResourceManager::GetOrLoadTextureArray(const std::string& name, const std::vector<const char*>& textures, GLuint slot, bool srgb)
 {
     auto it = textureArrays.find(name);
     if (it != textureArrays.end())
         return it->second.get();
 
-    auto textureArray = TextureArray::CreateUnique(textures, slot);
+    auto textureArray = TextureArray::CreateUnique(textures, slot, srgb);
     TextureArray* rawPtr = textureArray.get();
     textureArrays[name] = std::move(textureArray);
     return rawPtr;

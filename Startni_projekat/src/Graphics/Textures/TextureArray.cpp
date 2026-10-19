@@ -1,74 +1,71 @@
 #include "TextureArray.h"
 
-std::unique_ptr<TextureArray> TextureArray::CreateUnique(const std::vector<const char*>& textures, GLuint slot)
+#ifndef GL_TEXTURE_MAX_ANISOTROPY_EXT
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
+#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
+#endif
+
+std::unique_ptr<TextureArray> TextureArray::CreateUnique(const std::vector<const char*>& textures, GLuint slot, bool srgb)
 {
-    return std::make_unique<TextureArray>(textures, slot);
+    return std::make_unique<TextureArray>(textures, slot, srgb);
 }
 
-TextureArray::TextureArray(const std::vector<const char*>& textures, GLuint slot)
+bool TextureArray::UploadLayer(const char* path, int layer, int expectedW, int expectedH)
+{
+    int w, h, ch;
+    unsigned char* bytes = stbi_load(path, &w, &h, &ch, 4);
+    if (!bytes)
+    {
+        std::cerr << "TextureArray: failed to load '" << path << "'" << std::endl;
+        return false;
+    }
+
+    if (w != expectedW || h != expectedH)
+    {
+        std::cerr << "TextureArray: size mismatch in '" << path << "' (" << w << "x" << h
+            << ", expected " << expectedW << "x" << expectedH << ")" << std::endl;
+        stbi_image_free(bytes);
+        return false;
+    }
+
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, w, h, 1, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
+    stbi_image_free(bytes);
+    return true;
+
+}
+
+TextureArray::TextureArray(const std::vector<const char*>& textures, GLuint slot, bool srgb)
 {
     LOG_FUNC();
 
     unit = slot;
 
+    if (textures.empty())
+    {
+        std::cerr << "TextureArray: empty texture list" << std::endl;
+        return;
+    }
+    stbi_set_flip_vertically_on_load(true);
+
+    int width = 0, height = 0, ch = 0;
+    if (!stbi_info(textures[0], &width, &height, &ch))
+    {
+        std::cerr << "TextureArray: failed to read first texture '" << textures[0] << "'" << std::endl;
+        return;
+    }
+
+    const int layerCount = static_cast<int>(textures.size());
+    const int levels = 1 + static_cast<int>(std::floor(std::log2(static_cast<float>(std::max(width, height)))));
+
     glGenTextures(1, &ID);
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D_ARRAY, ID);
 
-    stbi_set_flip_vertically_on_load(true);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, levels, srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8, width, height, layerCount);
+
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    int width, height, numColCh;
-    GLenum format = GL_RGBA;
-
-    unsigned char* firstBytes = stbi_load(textures[0], &width, &height, &numColCh, 0);
-    if (!firstBytes)
-    {
-        std::cerr << "TextureArray: failed to load first texture '" << textures[0] << "'" << std::endl;
-        return;
-    }
-
-    if (numColCh == 3)
-        format = GL_RGB;
-    else if (numColCh == 4)
-        format = GL_RGBA;
-    else if (numColCh == 1)
-        format = GL_RED;
-    else
-    {
-        std::cerr << "TextureArray: unsupported channel count in '" << textures[0] << "'" << std::endl;
-        stbi_image_free(firstBytes);
-        return;
-    }
-
-    int layerCount = textures.size();
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, format, width, height, layerCount, 0, format, GL_UNSIGNED_BYTE, nullptr);
-
-    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, 1, format, GL_UNSIGNED_BYTE, firstBytes);
-    stbi_image_free(firstBytes);
-
-    for (size_t i = 1; i < textures.size(); i++)
-    {
-        int w, h, ch;
-        unsigned char* bytes = stbi_load(textures[i], &w, &h, &ch, 0);
-
-        if (!bytes)
-        {
-            std::cerr << "TextureArray: failed to load '" << textures[i] << "'" << std::endl;
-            continue;
-        }
-
-        if (w != width || h != height || ch != numColCh)
-        {
-            std::cerr << "TextureArray: dimension/channel mismatch in '" << textures[i] << "'. All textures must be identical in size/format!" << std::endl;
-            stbi_image_free(bytes);
-            continue;
-        }
-
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, format, GL_UNSIGNED_BYTE, bytes);
-        stbi_image_free(bytes);
-    }
-
+    for (int i = 0; i < layerCount; ++i)
+        UploadLayer(textures[i], i, width, height);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -76,9 +73,14 @@ TextureArray::TextureArray(const std::vector<const char*>& textures, GLuint slot
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+    GLfloat maxAniso = 1.0f;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+    glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_ANISOTROPY_EXT, std::min(16.0f, maxAniso));
+
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
 }
 
 TextureArray::~TextureArray()
@@ -89,9 +91,13 @@ TextureArray::~TextureArray()
 
 void TextureArray::texUnit(const Shader& shader, const char* uniform, GLuint unit)
 {
-    GLuint texUni = shader.GetUniformLocation(uniform);
+    GLint texUni = shader.GetUniformLocation(uniform);
     shader.Activate();
-    glUniform1i(texUni, unit);
+    if (texUni >= 0)
+        glUniform1i(texUni, static_cast<GLint>(unit));
+    else
+        std::cerr << "TextureArray: uniform '" << uniform << "' not found" << std::endl;
+
 }
 
 void TextureArray::Bind() const

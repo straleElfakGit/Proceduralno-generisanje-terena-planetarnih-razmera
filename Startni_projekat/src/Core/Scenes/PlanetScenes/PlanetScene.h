@@ -23,10 +23,13 @@ private:
     static const GLuint c_NodeSSBOBinding = 0;
     std::unique_ptr<SSBO<PlanetNode>> nodeSSBOPtr;
 
+    static constexpr float targetLeafSize = 1.0f;
 
-    void InitGridMesh();                          
+    void InitGridMesh();                
+    int ComputeMaxLevelForRadius(float radius) const;
 
 protected:
+    virtual void OnMaxElevationChanged(float maxElevation) override;
     virtual void StartSpecific() override;
     virtual void UpdateSpecific(float deltaTime) override;
     virtual void RenderSpecific() override;

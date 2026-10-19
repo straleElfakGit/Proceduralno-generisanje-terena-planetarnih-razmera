@@ -30,21 +30,19 @@ TexturePlanetScene::TexturePlanetScene(ApplicationBase* app) : PlanetSceneBase(a
 	ResourceManager& rm = ResourceManager::GetInstance();
 	shaderPtr = rm.GetOrLoadShader("TextureShader", "assets/Shaders/planetShader.vert", "assets/Shaders/planetShader.frag");
 
-	textures[0] = rm.GetOrLoadTexture("Water", "assets/Textures/Terrain/water.jpg", GL_TEXTURE_2D, 2, GL_RGB, GL_UNSIGNED_BYTE);
-	textures[1] = rm.GetOrLoadTexture("Send", "assets/Textures/Terrain/sand.jpg", GL_TEXTURE_2D, 3, GL_RGB, GL_UNSIGNED_BYTE);
-	textures[2] = rm.GetOrLoadTexture("Grass", "assets/Textures/Terrain/grass.jpg", GL_TEXTURE_2D, 4, GL_RGB, GL_UNSIGNED_BYTE);
-	textures[3] = rm.GetOrLoadTexture("StonyGrass", "assets/Textures/Terrain/stonyGrass.jpg", GL_TEXTURE_2D, 5, GL_RGB, GL_UNSIGNED_BYTE);
-	textures[4] = rm.GetOrLoadTexture("Rock", "assets/Textures/Terrain/rocky.jpg", GL_TEXTURE_2D, 6, GL_RGB, GL_UNSIGNED_BYTE);
-	textures[5] = rm.GetOrLoadTexture("Mountain", "assets/Textures/Terrain/mountains.jpg", GL_TEXTURE_2D, 7, GL_RGB, GL_UNSIGNED_BYTE);
-	textures[6] = rm.GetOrLoadTexture("Snow", "assets/Textures/Terrain/snow.jpg", GL_TEXTURE_2D, 8, GL_RGB, GL_UNSIGNED_BYTE);
+	waterTexture = rm.GetOrLoadTexture("Water", "assets/Textures/Terrain/water.jpg", GL_TEXTURE_2D, waterUnit, GL_RGB, GL_UNSIGNED_BYTE);
+	waterTexture->SetFilter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
 
-	textures[0]->texUnit(*shaderPtr, "texWater", 2);
-	textures[1]->texUnit(*shaderPtr, "texSand", 3);
-	textures[2]->texUnit(*shaderPtr, "texGrass", 4);
-	textures[3]->texUnit(*shaderPtr, "texStonyGrass", 5);
-	textures[3]->texUnit(*shaderPtr, "texRock", 6);
-	textures[5]->texUnit(*shaderPtr, "texMountain", 7);
-	textures[6]->texUnit(*shaderPtr, "texSnow", 8);
+	noiseTexture = rm.GetOrLoadTexture("BombNoise", "assets/Textures/Terrain/simplex-noise.png", GL_TEXTURE_2D, noiseUnit, GL_RGBA, GL_UNSIGNED_BYTE);
+	noiseTexture->SetFilter(GL_LINEAR, GL_LINEAR);
+
+	diffuseArray = rm.GetOrLoadTextureArray("DiffuseArray", terrainPaths, diffuseUnit, true);
+	normalArray = rm.GetOrLoadTextureArray("NormalArray", normalPaths, normalUnit, false);
+
+	waterTexture->texUnit(*shaderPtr, "texWater", waterUnit);
+	noiseTexture->texUnit(*shaderPtr, "noiseMap", noiseUnit);
+	diffuseArray->texUnit(*shaderPtr, "diffuseMap", diffuseUnit);
+	normalArray->texUnit(*shaderPtr, "normalMap", normalUnit);
 
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -63,15 +61,25 @@ void TexturePlanetScene::UpdateWaterPosition(float deltaTime)
 	shaderPtr->setVec2("waterOffset", textureSettings.waterOffset);
 }
 
+void TexturePlanetScene::SendTextureSettingsToShader()
+{
+	shaderPtr->Activate();
+	shaderPtr->setFloat("textureScale", textureSettings.textureScale);
+	shaderPtr->setFloat("normalStrength", textureSettings.normalStrength);
+}
+
 void TexturePlanetScene::UpdateSpecific(float deltaTime)
 {
 	UpdateWaterPosition(deltaTime);
+	SendTextureSettingsToShader();
 }
 
 void TexturePlanetScene::RenderSpecific()
 {
-	for (int i = 0; i < 7; i++)
-		textures[i]->Bind();
+	waterTexture->Bind();
+	noiseTexture->Bind();
+	diffuseArray->Bind();
+	normalArray->Bind();
 
 	if (planetSettings.showMesh)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -103,6 +111,11 @@ void TexturePlanetScene::RenderPlanetPropertiesGui()
 
 void TexturePlanetScene::RenderTextureSettings()
 {
+	ImGui::Text("Terrain textures");
+	ImGui::SliderFloat("Texture scale", &textureSettings.textureScale, 2.0f, 100.0f);
+	ImGui::SliderFloat("Normal strength", &textureSettings.normalStrength, 0.0f, 2.0f);
+
+	ImGui::Separator();
 	ImGui::Text("Water Animation");
 	ImGui::SliderFloat2("Water Speed", glm::value_ptr(textureSettings.waterSpeed), -0.1f, 0.1f);
 }
