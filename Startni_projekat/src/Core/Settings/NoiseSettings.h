@@ -10,7 +10,7 @@ struct NoiseSettings
 	float roughness = 2.0f;
 	float baseRoughness = 1.0f;
 	float persistance = 0.5f;
-	glm::vec3 center;
+	glm::vec3 center = glm::vec3(0.0f);
 	int numberOfOctaves = 1;
 	float minValue = 1.0f;
 

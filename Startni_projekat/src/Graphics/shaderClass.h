@@ -23,8 +23,8 @@ private:
 
 	mutable std::unordered_map<std::string, int> uniformLocationCache;
 
-	void PrintError(GLuint shader);
-	GLuint CreateShader(GLenum type, const char* shaderSource);
+	void PrintError(GLuint shader, const std::string& type);
+	GLuint CreateShader(GLenum type, const char* shaderSource, const std::string& Stype);
 
 protected:
 	virtual void DeleteSpecific() override;

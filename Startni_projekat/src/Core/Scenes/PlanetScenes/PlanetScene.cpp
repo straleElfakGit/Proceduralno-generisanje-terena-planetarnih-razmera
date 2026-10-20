@@ -18,6 +18,20 @@ int PlanetScene::ComputeMaxLevelForRadius(float radius) const
 	return glm::clamp(computed, 2, maxPlanetLods - 1);
 }
 
+void PlanetScene::SendBiomeNoiseSettingsToShader()
+{
+	shaderPtr->Activate();
+
+	shaderPtr->setFloat("biomeNoise.strength", noiseSettings.strength);
+	shaderPtr->setInt("biomeNoise.numberOfOctaves", noiseSettings.numberOfOctaves);
+	shaderPtr->setFloat("biomeNoise.baseRoughness", noiseSettings.baseRoughness);
+	shaderPtr->setFloat("biomeNoise.roughness", noiseSettings.roughness);
+	shaderPtr->setFloat("biomeNoise.persistance", noiseSettings.persistance);
+	shaderPtr->setFloat("biomeNoise.minValue", noiseSettings.minValue);
+	shaderPtr->setVec3("biomeNoise.center", noiseSettings.center);
+	shaderPtr->setUint("biomeNoise.seed", noiseSettings.seed);
+}
+
 void PlanetScene::StartSpecific()
 {
 	PlanetQuadTreeSettings qts;
@@ -36,6 +50,8 @@ void PlanetScene::StartSpecific()
 	nodeSSBOPtr = std::make_unique<SSBO<PlanetNode>>(c_NodeSSBOBinding);
 
 	decoyCameraPtr->SetRadius(planetSettings.radius * 1.25f);
+	SendBiomeNoiseSettingsToShader();
+	colorGenerator.UpdateElevation(elevationRange);
 }
 
 void PlanetScene::InitGridMesh()
@@ -119,6 +135,8 @@ void PlanetScene::UpdateSpecific(float deltaTime)
 
 	planetQuadTree.Select(view);
 	nodeSSBOPtr->Upload(planetQuadTree.GetSelection());
+
+	colorGenerator.SetShaderProgramParameters(*shaderPtr);
 }
 
 void PlanetScene::RenderSpecific()
@@ -192,10 +210,73 @@ void PlanetScene::OnMaxElevationChanged(float maxElevation)
 	/*PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
 	qts.heightMax = maxElevation;
 	planetQuadTree.Configure(qts);*/
+
+	colorGenerator.UpdateElevation(elevationRange);
 }
 
 void PlanetScene::RenderGuiSpecific()
 {
 	if (ImGui::CollapsingHeader("Culling & Decoy Camera Debug"))
 		decoyCameraPtr->RenderGui();
+	if (ImGui::CollapsingHeader("Bioms and coloring"))
+		RenderColorGui();
+}
+
+void PlanetScene::RenderColorGui()
+{
+	BiomeColorSettings& biomeSettings = colorGenerator.GetSettings().biomeSettings;
+
+	bool colorChanged = false;
+	bool structuralChanged = false;
+
+	structuralChanged |= ImGui::SliderFloat("Noise Offset", &biomeSettings.noiseOffset, -1.0f, 1.0f);
+	structuralChanged |= ImGui::SliderFloat("Noise Strength", &biomeSettings.noiseStrength, 0.0f, 1.0f);
+	structuralChanged |= ImGui::SliderFloat("Blend Amount", &biomeSettings.blendAmount, 0.0f, 1.0f);
+
+	ImGui::Separator();
+
+	for (size_t i = 0; i < biomeSettings.biomes.size(); i++)
+	{
+		Biome& biome = biomeSettings.biomes[i];
+		ImGui::PushID(static_cast<int>(i));
+
+		std::string header = "Biome " + std::to_string(i + 1);
+		if (ImGui::CollapsingHeader(header.c_str()))
+		{
+			structuralChanged |= ImGui::SliderFloat("Start Height", &biome.startHeight, 0.0f, 1.0f);
+			colorChanged |= ImGui::ColorEdit3("Tint", glm::value_ptr(biome.tint));
+			colorChanged |= ImGui::SliderFloat("Tint Amount", &biome.tintPercent, 0.0f, 1.0f);
+
+			for (size_t k = 0; k < biome.gradient.keys.size(); k++)
+			{
+				ImGui::PushID(static_cast<int>(k));
+				colorChanged |= ImGui::ColorEdit3("##color", glm::value_ptr(biome.gradient.keys[k].color), ImGuiColorEditFlags_NoInputs);
+				ImGui::SameLine();
+				colorChanged |= ImGui::SliderFloat("##pos", &biome.gradient.keys[k].position, 0.0f, 1.0f);
+				ImGui::PopID();
+			}
+			if (ImGui::Button("Add key")) { biome.gradient.keys.push_back({ 1.0f, glm::vec3(1.0f) }); colorChanged = true; }
+			ImGui::SameLine();
+			if (ImGui::Button("Remove key") && biome.gradient.keys.size() > 2) { biome.gradient.keys.pop_back(); colorChanged = true; }
+		}
+		ImGui::PopID();
+	}
+
+	if (ImGui::Button("Add biome") && biomeSettings.biomes.size() < 8)
+	{
+		Biome newBiome;
+		newBiome.gradient.keys = { { 0.0f, glm::vec3(0.5f) }, { 1.0f, glm::vec3(1.0f) } };
+		newBiome.startHeight = 1.0f;
+		biomeSettings.biomes.push_back(newBiome);
+		structuralChanged = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Remove biome") && biomeSettings.biomes.size() > 1)
+	{
+		biomeSettings.biomes.pop_back();
+		structuralChanged = true;
+	}
+
+	if (colorChanged || structuralChanged)
+		colorGenerator.UpdateColors();
 }

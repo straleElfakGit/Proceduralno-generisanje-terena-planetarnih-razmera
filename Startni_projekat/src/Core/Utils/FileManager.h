@@ -6,6 +6,7 @@
 #include <sstream>
 #include <cerrno>
 #include <unordered_set>
+#include <iostream>
 
 #include "Logging/Logger.h"
 

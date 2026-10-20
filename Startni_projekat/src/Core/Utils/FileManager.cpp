@@ -1,5 +1,18 @@
 #include "FileManager.h"
 
+static void ReportBadBytes(const std::string& src, const char* name)
+{
+    LOG_FUNC();
+    int line = 1;
+    for (unsigned char c : src)
+    {
+        if (c == '\n') { ++line; continue; }
+        if (c > 127 || (c < 32 && c != '\t' && c != '\r'))
+            std::cerr << name << ": line " << line << ": bad byte 0x"
+            << std::hex << static_cast<int>(c) << std::dec << "\n";
+    }
+}
+
 std::string FileManager::GetDirectoryPath(const std::string& filepath)
 {
     size_t pos = filepath.find_last_of("/\\");
@@ -50,11 +63,14 @@ std::string FileManager::ParseIncludesInternal(const std::string& filepath, std:
         finalCode << line << "\n";
     }
 
-    return finalCode.str();
+    std::string rez = finalCode.str();
+    ReportBadBytes(rez, filepath.c_str());
+    return rez;
 }
 
 std::string FileManager::get_file_contents_processed(const std::string& filepath)
 {
+    LOG_FUNC();
     std::unordered_set<std::string> includedFiles;
     return ParseIncludesInternal(filepath, includedFiles);
 }

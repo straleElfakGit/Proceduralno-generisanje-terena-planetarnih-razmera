@@ -1,8 +1,8 @@
 
-float hash(float n)
+float hash(float n, uint seed)
 {
     uint p = floatBitsToUint(n);
-    p ^= noise.seed;
+    p ^= seed;
     p ^= p >> 15;
     p *= 0x85ebca6bU;
     p ^= p >> 13;
@@ -12,7 +12,12 @@ float hash(float n)
     //return fract(sin(n)*753.5453123); 
 }
 
-vec4 Noised(vec3 x)
+float hash(float n)
+{
+    return hash(n, noise.seed);
+}
+
+vec4 Noised(vec3 x, uint seed)
 {
     vec3 p = floor(x);
     vec3 w = fract(x);
@@ -22,14 +27,14 @@ vec4 Noised(vec3 x)
 
     float n = p.x + p.y * 157.0 + 113.0 * p.z;
 
-    float a = hash(n + 0.0);
-    float b = hash(n + 1.0);
-    float c = hash(n + 157.0);
-    float d = hash(n + 158.0);
-    float e = hash(n + 113.0);
-    float f = hash(n + 114.0);
-    float g = hash(n + 270.0);
-    float h = hash(n + 271.0);
+    float a = hash(n + 0.0, seed);
+    float b = hash(n + 1.0, seed);
+    float c = hash(n + 157.0, seed);
+    float d = hash(n + 158.0, seed);
+    float e = hash(n + 113.0, seed);
+    float f = hash(n + 114.0, seed);
+    float g = hash(n + 270.0, seed);
+    float h = hash(n + 271.0, seed);
 
     float k0 = a;
     float k1 = b - a;
@@ -42,4 +47,9 @@ vec4 Noised(vec3 x)
 
     return vec4(k0 + k1 * u.x + k2 * u.y + k3 * u.z + k4 * u.x * u.y + k5 * u.y * u.z + k6 * u.z * u.x + k7 * u.x * u.y * u.z,
         du * (vec3(k1, k2, k3) + u.yzx * vec3(k4, k5, k6) + u.zxy * vec3(k6, k4, k5) + k7 * u.yzx * u.zxy));
+}
+
+vec4 Noised(vec3 x)
+{
+    return Noised(x, noise.seed);
 }

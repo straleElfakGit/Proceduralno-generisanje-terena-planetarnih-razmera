@@ -157,6 +157,7 @@
     <ClCompile Include="src\Core\Application\ApplicationBase.cpp" />
     <ClCompile Include="src\Core\Galaxy\Galaxy.cpp" />
     <ClCompile Include="src\Core\Logging\Logger.cpp" />
+    <ClCompile Include="src\Core\PlanetGeneration\ColorGenerator.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\DecoyCamera.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\Noise.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="src\Core\Application\ApplicationBase.h" />
     <ClInclude Include="src\Core\Galaxy\Galaxy.h" />
     <ClInclude Include="src\Core\Logging\Logger.h" />
+    <ClInclude Include="src\Core\PlanetGeneration\ColorGenerator.h" />
     <ClInclude Include="src\Core\PlanetGeneration\DecoyCamera.h" />
     <ClInclude Include="src\Core\PlanetGeneration\Noise.h" />
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetNode.h" />
@@ -272,6 +274,7 @@
     <ClInclude Include="src\Graphics\Camera\SurfaceCamera.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\Shaders\lod_vertex.glsl" />
     <None Include="assets\Shaders\noise_evaluation.glsl" />
     <None Include="assets\Shaders\planetShader.frag" />
     <None Include="assets\Shaders\planetShader.vert" />

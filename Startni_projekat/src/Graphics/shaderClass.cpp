@@ -2,6 +2,7 @@
 
 std::string get_file_contents(const char* filename)
 {
+	LOG_FUNC();
 	std::ifstream in(filename, std::ios::binary);
 	if (in)
 	{
@@ -21,14 +22,14 @@ std::unique_ptr<Shader> Shader::CreateUniqe(const std::string& vertPath, const s
 	return std::make_unique<Shader>(vertPath.c_str(), fragPath.c_str());
 }
 
-void Shader::PrintError(GLuint shader)
+void Shader::PrintError(GLuint shader, const std::string& type)
 {
 	char infoLog[512];
 	glGetShaderInfoLog(shader, 512, NULL, infoLog);
-	std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+	std::cout << "ERROR::" << type << "_SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
 }
 
-GLuint Shader::CreateShader(GLenum type, const char* shaderSource)
+GLuint Shader::CreateShader(GLenum type, const char* shaderSource, const std::string& Stype)
 {
 	int success;
 	GLuint shader = glCreateShader(type);
@@ -37,7 +38,7 @@ GLuint Shader::CreateShader(GLenum type, const char* shaderSource)
 
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success) 
-		PrintError(shader);
+		PrintError(shader, Stype);
 
 	return shader;
 }
@@ -52,8 +53,8 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 	const char* vertexSource = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();
 
-	GLuint vertexShader = CreateShader(GL_VERTEX_SHADER, vertexSource);
-	GLuint fragmentShader = CreateShader(GL_FRAGMENT_SHADER, fragmentSource);
+	GLuint vertexShader = CreateShader(GL_VERTEX_SHADER, vertexSource, "VERTEX");
+	GLuint fragmentShader = CreateShader(GL_FRAGMENT_SHADER, fragmentSource, "FRAGMENT");
 
 	ID = glCreateProgram();
 	glAttachShader(ID, vertexShader);

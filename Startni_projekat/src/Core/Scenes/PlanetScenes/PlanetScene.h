@@ -8,6 +8,7 @@
 #include "Buffers/VAO.h"
 #include "Buffers/EBO.h"
 #include "Buffers/SSBO.h"
+#include "PlanetGeneration/ColorGenerator.h"
 
 class PlanetScene : public PlanetSceneBase
 {
@@ -25,8 +26,13 @@ private:
 
     static constexpr float targetLeafSize = 1.0f;
 
+    ColorGenerator colorGenerator;
+
     void InitGridMesh();                
     int ComputeMaxLevelForRadius(float radius) const;
+
+    void RenderColorGui();
+    void SendBiomeNoiseSettingsToShader();
 
 protected:
     virtual void OnMaxElevationChanged(float maxElevation) override;
