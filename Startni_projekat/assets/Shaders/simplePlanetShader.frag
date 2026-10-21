@@ -44,7 +44,7 @@ void main()
     
     float landPercent = invLerp(0.0, elevationMinMax.y, elevation);
     float seaPercent  = invLerp(elevationMinMax.x, 0.0, elevation);
-    float isLand = floor(seaPercent);                       // 1 kad je elevation >= 0
+    float isLand = floor(seaPercent);
     float u = mix(mix(0.0, 0.5, seaPercent), mix(0.5, 1.0, landPercent), isLand);
 
     float n = float(max(biomeCount, 1));
