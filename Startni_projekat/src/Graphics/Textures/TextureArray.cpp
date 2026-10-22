@@ -34,6 +34,16 @@ bool TextureArray::UploadLayer(const char* path, int layer, int expectedW, int e
 
 }
 
+void TextureArray::SetAnisotropy(float level)
+{
+    glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, ID);
+    GLfloat maxAniso = 1.0f;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+    glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_ANISOTROPY_EXT, std::min(level, maxAniso));
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+}
+
 TextureArray::TextureArray(const std::vector<const char*>& textures, GLuint slot, bool srgb)
 {
     LOG_FUNC();

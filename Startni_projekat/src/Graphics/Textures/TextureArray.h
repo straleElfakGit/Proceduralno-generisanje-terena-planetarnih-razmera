@@ -30,6 +30,8 @@ public:
 
     void texUnit(const Shader& shader, const char* uniform, GLuint unit);
 
+    void SetAnisotropy(float level);
+
     virtual void Bind() const override;
     virtual void Unbind() const override;
 };

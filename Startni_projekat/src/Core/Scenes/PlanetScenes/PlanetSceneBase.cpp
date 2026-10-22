@@ -74,7 +74,9 @@ void PlanetSceneBase::Start()
 
 void PlanetSceneBase::UpdateSunPosition(float deltaTime)
 {
-	if (sunSettings.rotatePlanet)
+	const bool rotatePlanetNow = sunSettings.rotatePlanet && !IsWalking();
+
+	if (rotatePlanetNow)
 		sunSettings.planetAngle += sunSettings.planetVelocity * deltaTime;
 	else
 		sunSettings.sunAngle += sunSettings.sunVelocity * deltaTime;
@@ -96,6 +98,7 @@ void PlanetSceneBase::Update(float deltaTime)
 	WindowData* data = (WindowData*)glfwGetWindowUserPointer(win);
 
 	PollElevationRange();
+	surfaceCameraPtr->SetPlanetRotation(sunSettings.planetAngle);
 	UpdateWalkToggle(win);
 
 	PlanetInfluence influence;
@@ -175,8 +178,13 @@ void PlanetSceneBase::RenderSunGui()
 	ImGui::SliderFloat("Sun Height", &sunSettings.sunHeight, -10.0f, 10.0f);
 	ImGui::SliderFloat("Sun Distance", &sunSettings.sunDistance, 1.0f, 50.0f);
 
+	ImGui::BeginDisabled(IsWalking());
 	ImGui::Checkbox("Rotate planet (freezes sun)", &sunSettings.rotatePlanet);
 	ImGui::SliderFloat("Planet Velocity", &sunSettings.planetVelocity, 0.0f, 3.0f);
+	ImGui::EndDisabled();
+
+	if (IsWalking()) 
+		ImGui::TextDisabled("Planet rotation disabled while walking");
 
 	if (ImGui::Button("Reset Angles"))
 	{

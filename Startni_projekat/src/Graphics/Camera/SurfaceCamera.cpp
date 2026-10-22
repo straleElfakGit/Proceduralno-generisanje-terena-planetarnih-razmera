@@ -43,10 +43,14 @@ bool SurfaceCamera::TryMove(const glm::vec3& tangentDir, float distance)
 
 void SurfaceCamera::EnterFromWorld(const glm::vec3& worldPos, const glm::vec3& worldLookDir)
 {
-	float len = glm::length(worldPos);
-	surfaceDirection = (len > 1e-6f) ? (worldPos / len) : glm::vec3(1.0f, 0.0f, 0.0f);
+	const glm::mat3 inv = glm::transpose(planetRotation);
+	const glm::vec3 localPos = inv * worldPos;
+	const glm::vec3 localLook = inv * worldLookDir;
 
-	glm::vec3 tangentLook = worldLookDir - surfaceDirection * glm::dot(worldLookDir, surfaceDirection);
+	float len = glm::length(localPos);
+	surfaceDirection = (len > 1e-6f) ? (localPos / len) : glm::vec3(1.0f, 0.0f, 0.0f);
+
+	glm::vec3 tangentLook = localLook - surfaceDirection * glm::dot(localLook, surfaceDirection);
 	float tLen = glm::length(tangentLook);
 	if (tLen > 1e-4f)
 	{
@@ -80,13 +84,7 @@ void SurfaceCamera::MouseInput(GLFWwindow* window, int width, int height)
 		float rotX = sensitivity * (float)(mouseY - (height / 2)) / height;
 		float rotY = sensitivity * (float)(mouseX - (width / 2)) / width;
 
-		glm::vec3 right = glm::normalize(glm::cross(lookDirection, surfaceDirection));
-		glm::vec3 newLook = glm::rotate(lookDirection, glm::radians(-rotX), right);
-
-		if (std::abs(glm::angle(newLook, surfaceDirection) - glm::radians(90.0f)) <= glm::radians(85.0f))
-			lookDirection = newLook;
-
-		lookDirection = glm::rotate(lookDirection, glm::radians(-rotY), surfaceDirection);
+		Look(glm::radians(-rotY), glm::radians(-rotX));
 
 		glfwSetCursorPos(window, (width / 2), (height / 2));
 	}
@@ -95,6 +93,37 @@ void SurfaceCamera::MouseInput(GLFWwindow* window, int width, int height)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		firstClick = true;
 	}
+}
+
+void SurfaceCamera::Look(float yawRad, float pitchRad)
+{
+	glm::vec3 rightRaw = glm::cross(lookDirection, surfaceDirection);
+	if (glm::length(rightRaw) > 1e-5f)
+	{
+		glm::vec3 right = glm::normalize(rightRaw);
+		glm::vec3 newLook = glm::rotate(lookDirection, pitchRad, right);
+
+		if (std::abs(glm::angle(newLook, surfaceDirection) - glm::radians(90.0f)) <= glm::radians(85.0f))
+			lookDirection = newLook;
+	}
+
+	lookDirection = glm::rotate(lookDirection, yawRad, surfaceDirection);
+}
+
+void SurfaceCamera::KeyboardLook(GLFWwindow* window, float deltaTime)
+{
+	const float step = glm::radians(keyLookSpeed) * deltaTime;
+
+	float yaw = 0.0f;
+	float pitch = 0.0f;
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) yaw += step;
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) yaw -= step;
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) pitch += step;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) pitch -= step;
+
+	if (yaw != 0.0f || pitch != 0.0f)
+		Look(yaw, pitch);
 }
 
 void SurfaceCamera::Inputs(GLFWwindow* window, float deltaTime, int width, int height)
@@ -117,23 +146,24 @@ void SurfaceCamera::Inputs(GLFWwindow* window, float deltaTime, int width, int h
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 		boostMultiplier = 1.0f;
 
+	KeyboardLook(window, deltaTime);
 	MouseInput(window, width, height);
 
 	surfaceDirection = glm::normalize(surfaceDirection);
-	lookDirection = glm::normalize(lookDirection - surfaceDirection * glm::dot(lookDirection, surfaceDirection));
+	lookDirection = glm::normalize(lookDirection);
 }
 
 glm::vec3 SurfaceCamera::GetPosition() const
 {
 	float elevation = ElevationAt(surfaceDirection);
 	float r = elevation * planetRadius + eyeHeight;
-	return surfaceDirection * r;
+	return planetRotation * (surfaceDirection * r);
 }
 
 glm::mat4 SurfaceCamera::GetViewMatrix() const
 {
 	glm::vec3 pos = GetPosition();
-	return glm::lookAt(pos, pos + lookDirection, surfaceDirection);
+	return glm::lookAt(pos, pos + GetOrientation(), GetUp());
 }
 
 glm::mat4 SurfaceCamera::GetProjectionMatrix(float fovDeg, float nearPlane, float farPlane, int width, int height) const

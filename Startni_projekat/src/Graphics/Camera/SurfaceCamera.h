@@ -18,6 +18,7 @@ class SurfaceCamera
 private:
 	glm::vec3 surfaceDirection = glm::vec3(1.0f, 0.0f, 0.0f); // local-up vektor
 	glm::vec3 lookDirection = glm::vec3(0.0f, 0.0f, -1.0f); // tangenta na sferu
+	glm::mat3 planetRotation = glm::mat3(1.0f);
 
 	float planetRadius = 50.0f;
 	float eyeHeight = 1.63f;
@@ -33,16 +34,21 @@ private:
 	bool firstClick = true;
 	bool active = false;
 
+	float keyLookSpeed = 45.0f;
+
 	void MouseInput(GLFWwindow* window, int width, int height);
 
 	float ElevationAt(const glm::vec3& dir) const;
 	void ApplyRotation(const glm::vec3& axis, float angle);
 	bool TryMove(const glm::vec3& tangentDir, float distance);
 
+	void Look(float yawRad, float pitchRad);
+	void KeyboardLook(GLFWwindow* window, float deltaTime);
+
 public:
 	void SetPlanetRadius(float r) { planetRadius = r; }
 	void SetEyeHeight(float h) { eyeHeight = h; }
-	void SetMaxElevationFallback(float m) { maxElevationFallback = m; maxElevationFallback = 0.0f; }
+	void SetMaxElevationFallback(float m) { maxElevationFallback = m; }
 	void SetHeightCalculator(const TerrainHeightCalculator* calculator) { heightCalculator = calculator; }
 	void SetMaxClimbSlope(float slope) { maxClimbSlope = slope; }
 	void SetWalkSpeed(float s) { walkSpeed = s; }
@@ -53,19 +59,22 @@ public:
 	void EnterFromWorld(const glm::vec3& worldPos, const glm::vec3& worldLookDir);
 
 	glm::vec3 GetExitPosition() const { return GetPosition(); }
-	glm::vec3 GetExitOrientation() const { return lookDirection; }
+	glm::vec3 GetExitOrientation() const { return planetRotation * lookDirection; }
 
 	void Inputs(GLFWwindow* window, float deltaTime, int width, int height);
 
 	glm::vec3 GetPosition() const;
-	glm::vec3 GetOrientation() const { return lookDirection; }
-	glm::vec3 GetUp() const { return surfaceDirection; }
+	glm::vec3 GetOrientation() const { return planetRotation * lookDirection; }
+	glm::vec3 GetUp() const { return planetRotation * surfaceDirection; }
 
 	glm::mat4 GetViewMatrix() const;
 	glm::mat4 GetProjectionMatrix(float fovDeg, float nearPlane, float farPlane, int width, int height) const;
 	void Matrix(float fovDeg, float nearPlane, float farPlane, Shader& shader, const char* uniform, int width, int height) const;
 	void SetPositionToShader(const std::string& uniform, const Shader& shaderProgram) const;
 
+	void SetPlanetRotation(float angleRad) { planetRotation = glm::mat3(glm::rotate(glm::mat4(1.0f), angleRad, glm::vec3(0, 1, 0))); }
+	
+	void SetKeyLookSpeed(float degPerSec) { keyLookSpeed = degPerSec; }
 };
 
 #endif // !SURCE_CAMERA_H

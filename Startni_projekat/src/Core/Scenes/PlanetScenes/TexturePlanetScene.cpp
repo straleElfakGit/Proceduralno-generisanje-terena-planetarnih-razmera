@@ -43,6 +43,11 @@ TexturePlanetScene::TexturePlanetScene(ApplicationBase* app) : PlanetSceneBase(a
 	noiseTexture->texUnit(*shaderPtr, "noiseMap", noiseUnit);
 	diffuseArray->texUnit(*shaderPtr, "diffuseMap", diffuseUnit);
 	normalArray->texUnit(*shaderPtr, "normalMap", normalUnit);
+
+	diffuseArray->SetAnisotropy(8.0f); 
+	normalArray->SetAnisotropy(4.0f);
+
+	planetSettings.resolution = 16;
 }
 
 TexturePlanetScene::~TexturePlanetScene() { }
@@ -66,7 +71,7 @@ void TexturePlanetScene::StartSpecific()
 	qts.planetRadius = planetSettings.radius;
 	qts.maxLevel = ComputeMaxLevelForRadius(planetSettings.radius);
 	qts.nodeResolution = res;
-	qts.lodRangeFactor = 6.0f;
+	qts.lodRangeFactor = 5.0f;
 	qts.morphStartRatio = 0.5f;
 	qts.heightMax = cachedMaxElevation;
 	qts.frustumCulling = true;
@@ -158,7 +163,10 @@ void TexturePlanetScene::UpdateLod(float deltaTime)
 	view.localToClip = activeProjMat * activeViewMat * planetTransform;
 
 	planetQuadTree.Select(view);
-	nodeSSBOPtr->Upload(planetQuadTree.GetSelection());
+	auto selection = planetQuadTree.GetSelection();
+	std::sort(selection.begin(), selection.end(),
+		[](const PlanetNode& a, const PlanetNode& b) { return a.lod < b.lod; });
+	nodeSSBOPtr->Upload(selection);
 }
 
 

@@ -33,7 +33,20 @@ struct BiomeColorSettings
 			{ 0.85f, glm::vec3(0.82353f,  0.82353f,  0.82353f) },
 			{ 1.0f, glm::vec3(1.0f, 1.0f, 1.0f) },
 		};
-		biomes.push_back(b);
+
+		Biome bb;
+		bb.gradient.keys = {
+			{ 0.000f, glm::vec3(0.80f, 0.74f, 0.58f) },
+			{ 0.150f, glm::vec3(0.38f, 0.55f, 0.28f) },
+			{ 0.206f, glm::vec3(0.24f, 0.38f, 0.18f) },
+			{ 0.411f, glm::vec3(0.42f, 0.35f, 0.28f) },
+			{ 0.487f, glm::vec3(0.32f, 0.28f, 0.25f) },
+			{ 0.595f, glm::vec3(0.55f, 0.56f, 0.58f) },
+			{ 0.850f, glm::vec3(0.80f, 0.82f, 0.85f) },
+			{ 1.000f, glm::vec3(0.96f, 0.98f, 1.00f) }
+		};
+
+		biomes.push_back(bb);
 
 		noise.numberOfOctaves = 2;
 		noise.baseRoughness = 1.5f;

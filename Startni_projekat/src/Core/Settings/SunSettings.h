@@ -15,7 +15,7 @@ struct SunSettings
     float planetAngle = 0.0f;
     float planetVelocity = 0.2f;
     
-    bool rotatePlanet = true;
+    bool rotatePlanet = false;
 
     SunSettings() 
     {

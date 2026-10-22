@@ -17,10 +17,8 @@ struct DirLight {
 
 out vec4 FragColor;
 
-
 in vec3 fragPos;
 in float elevation;
-in vec3 normal;
 in vec3 objectPos;
 in vec3 objectNormal; 
 
@@ -57,13 +55,17 @@ const float NORMAL_Y_SIGN[NUM_LAYERS] = float[NUM_LAYERS](1.0, 1.0, 1.0, 1.0, 1.
 
 const float TEX_SIZE = 1024.0;
 const float BOMB_NOISE_SCALE = 0.0025;
-const float BOMB_MAX_TEXELS = 6.0;
-const float NORMAL_FADE_START = 1.0;      
-const float NORMAL_FADE_END = 4.0;
+const float BOMB_MAX_TEXELS = 0.0;
+const float NORMAL_FADE_START = 2.0;      
+const float NORMAL_FADE_END = 10.0;
 
 const float COAST_WIDTH = 0.015;
 const float HEIGHT_BLEND_CONTRAST = 0.8;
 const float HEIGHT_BLEND_DEPTH = 0.2;
+
+const float PROJ_MIN_WEIGHT  = 0.03;  
+const float LAYER_MIN_WEIGHT = 0.04;
+const float NORMAL_MIN_SHARE = 0.15;
 
 // ---------------------------------------------------------------- projekcije (biplanar)
 
@@ -81,6 +83,7 @@ struct Projection
 
 Projection gProj[2];
 float gTexelsPerPixel = 0.0;
+int gProjCount = 2;
 
 vec3 CalcDirLight(DirLight light, vec3 norm, vec3 viewDir, vec3 baseColor, float specFactor);
 vec3 GetOceanColor(float depthFactor);
@@ -99,7 +102,11 @@ void SetupProjections(vec3 p, vec3 dpdx, vec3 dpdy, vec3 n)
     vec2 w = clamp((vec2(an[axMajor], an[axMid]) - 0.5773) / (1.0 - 0.5773), 0.0, 1.0) + 1e-3;
     w /= (w.x + w.y);
 
-    for (int i = 0; i < 2; ++i)
+    w.y = max(w.y - PROJ_MIN_WEIGHT, 0.0);
+    w /= (w.x + w.y);
+    gProjCount = (w.y > 0.0) ? 2 : 1;
+
+    for (int i = 0; i < 2; i++)
     {
         int a = axis[i];
         ivec3 ax = ivec3(a, (a + 1) % 3, (a + 2) % 3);
@@ -118,7 +125,7 @@ void SetupProjections(vec3 p, vec3 dpdx, vec3 dpdy, vec3 n)
 
     if (gTexelsPerPixel < BOMB_MAX_TEXELS)
     {
-        for (int i = 0; i < 2; ++i)
+        for (int i = 0; i < gProjCount; i++)
         {
             float k  = textureLod(noiseMap, gProj[i].uv * BOMB_NOISE_SCALE, 0.0).r;
             float l  = k * 8.0;
@@ -155,16 +162,16 @@ vec4 SampleBombed(sampler2DArray tex, int p, int layer)
 vec4 SampleDiffuse(int layer)
 {
     vec4 c = vec4(0.0);
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < gProjCount; ++i)
         c += SampleBombed(diffuseMap, i, layer) * gProj[i].weight;
-    return c;   // rgb = albedo (linearno), a = visina
+    return c;
 }
 
 vec3 SampleNormal(int layer, vec3 geoN, float strength)
 {
     vec3 result = vec3(0.0);
 
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < gProjCount; ++i)
     {
         ivec3 ax = gProj[i].axes;
 
@@ -234,7 +241,7 @@ vec3 ShadeLand(float landT, float steep, vec3 geoN, out vec3 outN)
 
     for (int k = 0; k < 3; ++k)
     {
-        if (wt[k] > 0.01)
+        if (wt[k] > LAYER_MIN_WEIGHT)
         {
             d[k] = SampleDiffuse(idx[k]);
             s[k] = wt[k] + d[k].a * HEIGHT_BLEND_CONTRAST;
@@ -267,7 +274,7 @@ vec3 ShadeLand(float landT, float steep, vec3 geoN, out vec3 outN)
     {
         vec3 nSum = vec3(0.0);
         for (int k = 0; k < 3; ++k)
-            if (b[k] > 0.001)
+            if (b[k] > NORMAL_MIN_SHARE * bSum)
                 nSum += SampleNormal(idx[k], geoN, normalStrength * nFade) * b[k];
 
         outN = normalize(nSum);
@@ -281,7 +288,7 @@ vec3 ShadeLand(float landT, float steep, vec3 geoN, out vec3 outN)
 vec3 ShadeWater(float seaT)
 {
     vec3 tex = vec3(0.0);
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < gProjCount; ++i)
         tex += textureGrad(texWater, gProj[i].uv + waterOffset, gProj[i].dx, gProj[i].dy).rgb * gProj[i].weight;
 
     vec3 tint = GetOceanColor(1.0 - seaT);
