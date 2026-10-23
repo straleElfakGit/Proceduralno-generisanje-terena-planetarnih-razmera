@@ -4,6 +4,7 @@ PlanetSceneBase::PlanetSceneBase(ApplicationBase* app) : Scene(app)
 {
 	cameraPtr = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 250.0f));
 	galaxyPtr = std::make_unique<Galaxy>();
+	sunPtr = std::make_unique<Sun>();
 
 	heightCalculatorPtr = std::make_unique<TerrainHeightCalculator>(&noiseSettings);
 
@@ -90,6 +91,7 @@ void PlanetSceneBase::UpdateSunPosition(float deltaTime)
 		std::sin(sunSettings.sunAngle) * sunSettings.sunDistance);
 
 	sunSettings.lightPtr->UpdateDirection(glm::normalize(-sunPosition));
+	sunSettings.direction = glm::normalize(sunPosition);
 }
 
 void PlanetSceneBase::Update(float deltaTime)
@@ -162,6 +164,7 @@ void PlanetSceneBase::Render()
 		: cameraPtr->GetProjectionMatrix(fov, currentNearPlane, cameraFarPlane, data->width, data->height);
 
 	galaxyPtr->Render(viewMat, projectionMat);
+	sunPtr->Render(viewMat, projectionMat, sunSettings.direction);
 
 	shaderPtr->Activate();
 	if (walking)
@@ -191,6 +194,15 @@ void PlanetSceneBase::RenderSunGui()
 		sunSettings.sunAngle = 0.0f;
 		sunSettings.planetAngle = 0.0f;
 	}
+
+	ImGui::Separator();
+	SunVisualSettings& sv = sunPtr->GetSettings();
+	ImGui::Checkbox("Show sun", &sv.visible);
+	ImGui::SliderFloat("Sun radius (deg)", &sv.angularRadiusDeg, 0.2f, 10.0f);
+	ImGui::SliderFloat("Glow size", &sv.glowScale, 3.0f, 20.0f);
+	ImGui::SliderFloat("Glow strength", &sv.glowStrength, 0.0f, 2.0f);
+	ImGui::SliderFloat("Core intensity", &sv.coreIntensity, 0.5f, 6.0f);
+	ImGui::ColorEdit3("Sun color", glm::value_ptr(sv.color));
 }
 
 void PlanetSceneBase::RenderCameraGui()

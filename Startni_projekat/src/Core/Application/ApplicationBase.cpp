@@ -9,7 +9,7 @@ ApplicationBase::ApplicationBase()
 	windowData.title = "Application";
 	windowData.width = 800;
 	windowData.height = 600;
-	windowData.VSync = true;
+	windowData.VSync = false;
 	windowData.app = this;
 
 	window = Window::Create(this);

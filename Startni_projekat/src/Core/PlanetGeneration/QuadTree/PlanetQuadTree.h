@@ -41,6 +41,8 @@ private:
 	FrustumResult TestFrustum(const PlanetNodeBounds& b) const;
 	bool IntersectsRange(const PlanetNodeBounds& b, int lod) const;
 
+	double DistanceToNode(const PlanetNodeBounds& b) const;
+
 public:
 	explicit PlanetQuadTree(const PlanetQuadTreeSettings& settings = PlanetQuadTreeSettings());
 
@@ -56,6 +58,8 @@ public:
 	const float* GetMorphStart() const { return morphStart.data(); }
 	const float* GetMorphEnd() const { return morphEnd.data(); }
 	int GetLodCount() const { return settings.maxLevel + 1; }
+
+	void SetHeightMax(float h) { settings.heightMax = std::max(h, 0.0f); }
 
 	static glm::dvec3 FaceToSphere(int face, double u, double v);
 

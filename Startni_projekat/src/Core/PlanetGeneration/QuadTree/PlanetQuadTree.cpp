@@ -74,7 +74,7 @@ void PlanetQuadTree::Configure(const PlanetQuadTreeSettings& s)
 	settings.nodeResolution = std::max(2, settings.nodeResolution - (settings.nodeResolution % 2));
 
 	const PlanetNodeBounds finest = ComputeBounds(0, settings.maxLevel, 0, 0);
-	const float baseDiameter = 2.0f * finest.radius;
+	const float baseDiameter = 2.0f * settings.planetRadius * std::sin(finest.halfAngle);
 
 	const float range0 = settings.lodRangeFactor * baseDiameter;
 	for (int lod = 0; lod < GetLodCount(); lod++)
@@ -155,13 +155,35 @@ PlanetNodeBounds PlanetQuadTree::ComputeBounds(int face, int level, int x, int y
 	PlanetNodeBounds b;
 	b.center = glm::vec3(c);
 	b.radius = static_cast<float>(r);
+	b.axis = glm::vec3(axis);
+	b.halfAngle = static_cast<float>(halfAngle);
 	return b;
+}
+
+double PlanetQuadTree::DistanceToNode(const PlanetNodeBounds& b) const
+{
+	const double Rin = settings.planetRadius;
+	const double Rout = Rin * (1.0 + settings.heightMax);
+
+	const glm::dvec3 cam(camera);
+	const double rho = glm::length(cam);
+	if (rho < 1e-9)
+		return Rin;
+
+	const double cosT = glm::clamp(glm::dot(cam / rho, glm::dvec3(b.axis)), -1.0, 1.0);
+	const double theta = std::acos(cosT);
+	const double phi = std::max(0.0, theta - static_cast<double>(b.halfAngle));
+
+	const double r = glm::clamp(rho * std::cos(phi), Rin, Rout);
+	const double s = std::sin(0.5 * phi);
+
+	//kosinusna teorema.
+	return std::sqrt((rho - r) * (rho - r) + 4.0 * rho * r * s * s);
 }
 
 bool PlanetQuadTree::IntersectsRange(const PlanetNodeBounds& b, int lod) const
 {
-	const float r = ranges[lod] + b.radius;
-	return glm::distance(camera, b.center) <= r;
+	return DistanceToNode(b) <= ranges[lod];
 }
 
 PlanetQuadTree::FrustumResult PlanetQuadTree::TestFrustum(const PlanetNodeBounds& b) const

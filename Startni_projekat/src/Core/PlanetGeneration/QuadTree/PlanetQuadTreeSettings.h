@@ -28,6 +28,8 @@ struct PlanetNodeBounds
 {
 	glm::vec3 center;
 	float radius;
+	glm::vec3 axis;
+	float halfAngle;
 };
 
 #endif // !PLANET_QUADTREE_SETTINGS

@@ -161,6 +161,7 @@
     <ClCompile Include="src\Core\PlanetGeneration\DecoyCamera.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\Noise.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.cpp" />
+    <ClCompile Include="src\Core\PlanetGeneration\Sun.cpp" />
     <ClCompile Include="src\Core\PlanetGeneration\TerrainHeightCalculator.cpp" />
     <ClCompile Include="src\Core\ResourceManager\ResourceManager.cpp" />
     <ClCompile Include="src\Core\Scenes\BasicScene.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetNode.h" />
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTree.h" />
     <ClInclude Include="src\Core\PlanetGeneration\QuadTree\PlanetQuadTreeSettings.h" />
+    <ClInclude Include="src\Core\PlanetGeneration\Sun.h" />
     <ClInclude Include="src\Core\PlanetGeneration\TerrainHeightCalculator.h" />
     <ClInclude Include="src\Core\ResourceManager\ResourceManager.h" />
     <ClInclude Include="src\Core\Scenes\BasicScene.h" />
@@ -286,6 +288,8 @@
     <None Include="assets\Shaders\simplePlanetShaderNoTree.vert" />
     <None Include="assets\Shaders\skyBoxShader.frag" />
     <None Include="assets\Shaders\skyBoxShader.vert" />
+    <None Include="assets\Shaders\sunShader.frag" />
+    <None Include="assets\Shaders\sunShader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

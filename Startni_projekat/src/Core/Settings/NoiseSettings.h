@@ -1,7 +1,8 @@
 #ifndef NOISE_SETTINGS_H
 #define NOISE_SETTINGS_H
 
-#include<glm/glm.hpp>
+#include    <glm/glm.hpp>
+#include <algorithm>
 
 struct NoiseSettings
 {
@@ -26,7 +27,7 @@ struct NoiseSettings
         }
 
         maxValue = (maxValue - minValue) * strength;
-        return maxValue;
+        return std::max(maxValue, 0.0f);
     }
 };
 

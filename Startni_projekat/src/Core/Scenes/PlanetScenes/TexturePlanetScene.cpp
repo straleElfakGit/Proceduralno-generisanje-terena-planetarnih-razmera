@@ -46,8 +46,6 @@ TexturePlanetScene::TexturePlanetScene(ApplicationBase* app) : PlanetSceneBase(a
 
 	diffuseArray->SetAnisotropy(8.0f); 
 	normalArray->SetAnisotropy(4.0f);
-
-	planetSettings.resolution = 16;
 }
 
 TexturePlanetScene::~TexturePlanetScene() { }
@@ -119,12 +117,7 @@ void TexturePlanetScene::InitGridMesh()
 
 void TexturePlanetScene::OnMaxElevationChanged(float maxElevation)
 {
-	/*PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
-	if (std::abs(qts.heightMax - maxElevation) < 1e-4f)
-		return;
-
-	qts.heightMax = maxElevation;
-	planetQuadTree.Configure(qts);*/
+	planetQuadTree.SetHeightMax(elevationRange.y);
 }
 
 void TexturePlanetScene::UpdateLod(float deltaTime)

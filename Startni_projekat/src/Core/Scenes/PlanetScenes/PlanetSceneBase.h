@@ -17,6 +17,7 @@
 #include "Settings/PlanetSettings.h"
 #include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
+#include "PlanetGeneration/Sun.h"
 #include "PlanetGeneration/Noise.h"
 #include "PlanetGeneration/TerrainHeightCalculator.h"
 #include "ResourceManager/ResourceManager.h"
@@ -32,6 +33,7 @@ protected:
     float currentNearPlane = 0.1f;
 
     std::unique_ptr<Galaxy> galaxyPtr;
+    std::unique_ptr<Sun> sunPtr;
 
     PlanetSettings planetSettings;
     SunSettings sunSettings;

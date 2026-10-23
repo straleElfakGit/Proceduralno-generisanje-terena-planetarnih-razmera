@@ -165,6 +165,9 @@
     <ClCompile Include="src\Core\PlanetGeneration\ColorGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\PlanetGeneration\Sun.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Buffers\EBO.h">
@@ -368,6 +371,9 @@
     <ClInclude Include="src\Core\PlanetGeneration\ColorGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\PlanetGeneration\Sun.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\Shaders\skyBoxShader.vert" />
@@ -382,5 +388,7 @@
     <None Include="assets\Shaders\sateliteShader.vert" />
     <None Include="assets\Shaders\sateliteShader.frag" />
     <None Include="assets\Shaders\lod_vertex.glsl" />
+    <None Include="assets\Shaders\sunShader.vert" />
+    <None Include="assets\Shaders\sunShader.frag" />
   </ItemGroup>
 </Project>

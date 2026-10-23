@@ -17,6 +17,8 @@ struct SunSettings
     
     bool rotatePlanet = false;
 
+    glm::vec3 direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
     SunSettings() 
     {
         lightPtr = std::make_unique<DirectionalLight>(

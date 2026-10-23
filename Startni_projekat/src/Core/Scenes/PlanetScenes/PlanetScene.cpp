@@ -207,10 +207,7 @@ void PlanetScene::SetMaxElevation(float maxElevation)
 
 void PlanetScene::OnMaxElevationChanged(float maxElevation)
 {
-	/*PlanetQuadTreeSettings qts = planetQuadTree.GetSettings();
-	qts.heightMax = maxElevation;
-	planetQuadTree.Configure(qts);*/
-
+	planetQuadTree.SetHeightMax(elevationRange.y);
 	colorGenerator.UpdateElevation(elevationRange);
 }
 

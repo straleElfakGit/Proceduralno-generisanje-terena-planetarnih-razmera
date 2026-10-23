@@ -7,7 +7,7 @@
 struct PlanetSettings
 {
 	float radius = 100.0f;
-	unsigned int resolution = 32;
+	unsigned int resolution = 16;
 	bool showMesh = false;
 
 	std::unique_ptr<BasicMaterial> matPtr;
