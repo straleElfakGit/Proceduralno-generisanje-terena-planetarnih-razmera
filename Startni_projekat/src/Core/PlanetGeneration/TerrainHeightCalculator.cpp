@@ -8,12 +8,22 @@ namespace
 		std::memcpy(&u, &f, sizeof(u));
 		return u;
 	}
+
+	float Quintic(float t)
+	{
+		return t * t * t * (6.0f * t * t - 15.0f * t + 10.0f);
+	}
+
+	float Clamp01(float v)
+	{
+		return std::max(0.0f, std::min(v, 1.0f));
+	}
 }
 
-float TerrainHeightCalculator::Hash(float n) const
+float TerrainHeightCalculator::Hash(float n, unsigned int seed)
 {
 	unsigned int p = FloatBitsToUint(n);
-	p ^= settings->seed;
+	p ^= seed;
 	p ^= p >> 15;
 	p *= 0x85ebca6bU;
 	p ^= p >> 13;
@@ -22,73 +32,115 @@ float TerrainHeightCalculator::Hash(float n) const
 	return static_cast<float>(p) * 2.3283064365386963e-10f;
 }
 
-glm::vec4 TerrainHeightCalculator::Noised(const glm::vec3& x) const
+float TerrainHeightCalculator::NoiseValue(const glm::vec3& x, unsigned int seed)
 {
-	glm::vec3 p = glm::floor(x);
-	glm::vec3 w = x - p;
-	glm::vec3 u = w * w * w * (6.0f * w * w - 15.0f * w + 10.0f);
-	glm::vec3 du = 6.0f * w * (1.0f - w);
+	const float px = std::floor(x.x);
+	const float py = std::floor(x.y);
+	const float pz = std::floor(x.z);
 
-	float n = p.x + p.y * 157.0f + 113.0f * p.z;
+	const float ux = Quintic(x.x - px);
+	const float uy = Quintic(x.y - py);
+	const float uz = Quintic(x.z - pz);
 
-	float a = Hash(n + 0.0f);
-	float b = Hash(n + 1.0f);
-	float c = Hash(n + 157.0f);
-	float d = Hash(n + 158.0f);
-	float e = Hash(n + 113.0f);
-	float f = Hash(n + 114.0f);
-	float g = Hash(n + 270.0f);
-	float h = Hash(n + 271.0f);
+	const float n = px + py * 157.0f + 113.0f * pz;
 
-	float k0 = a;
-	float k1 = b - a;
-	float k2 = c - a;
-	float k3 = e - a;
-	float k4 = a - b - c + d;
-	float k5 = a - c - e + g;
-	float k6 = a - b - e + f;
-	float k7 = -a + b + c - d + e - f - g + h;
+	const float a = Hash(n + 0.0f, seed);
+	const float b = Hash(n + 1.0f, seed);
+	const float c = Hash(n + 157.0f, seed);
+	const float d = Hash(n + 158.0f, seed);
+	const float e = Hash(n + 113.0f, seed);
+	const float f = Hash(n + 114.0f, seed);
+	const float g = Hash(n + 270.0f, seed);
+	const float h = Hash(n + 271.0f, seed);
 
-	float value = k0 + k1 * u.x + k2 * u.y + k3 * u.z
-		+ k4 * u.x * u.y + k5 * u.y * u.z + k6 * u.z * u.x
-		+ k7 * u.x * u.y * u.z;
+	const float k0 = a;
+	const float k1 = b - a;
+	const float k2 = c - a;
+	const float k3 = e - a;
+	const float k4 = a - b - c + d;
+	const float k5 = a - c - e + g;
+	const float k6 = a - b - e + f;
+	const float k7 = -a + b + c - d + e - f - g + h;
 
-	glm::vec3 uYZX(u.y, u.z, u.x);
-	glm::vec3 uZXY(u.z, u.x, u.y);
-	glm::vec3 grad = du * (glm::vec3(k1, k2, k3)
-		+ uYZX * glm::vec3(k4, k5, k6)
-		+ uZXY * glm::vec3(k6, k4, k5)
-		+ k7 * uYZX * uZXY);
-
-	return glm::vec4(value, grad.x, grad.y, grad.z);
+	return k0 + k1 * ux + k2 * uy + k3 * uz
+		+ k4 * ux * uy + k5 * uy * uz + k6 * uz * ux
+		+ k7 * ux * uy * uz;
 }
 
-float TerrainHeightCalculator::NoiseSum(const glm::vec3& pointOnUnitSphere) const
+float TerrainHeightCalculator::EvaluateLayer(const TerrainLayerSettings& layer, const glm::vec3& p)
 {
-	float noiseValue = 0.0f;
-	float frequency = settings->baseRoughness;
+	const NoiseSettings& s = layer.noise;
+
+	float sum = 0.0f;
+	float frequency = s.baseRoughness;
 	float amplitude = 1.0f;
 
-	for (int i = 1; i <= settings->numberOfOctaves; ++i)
+	if (layer.filterType == NoiseFilterType::Rigid)
 	{
-		noiseValue += Noised(pointOnUnitSphere * frequency + settings->center).x * amplitude;
-		frequency *= settings->roughness;
-		amplitude *= settings->persistance;
+		float weight = 1.0f;
+
+		for (int i = 0; i < s.numberOfOctaves; ++i)
+		{
+			const float n = NoiseValue(p * frequency + s.center, s.seed) * 2.0f - 1.0f;   // [-1, 1]
+
+			float v = 1.0f - std::abs(n);
+			v *= v;
+			v *= weight;
+			weight = Clamp01(v * layer.weightMultiplier);
+
+			sum += v * amplitude;
+			frequency *= s.roughness;
+			amplitude *= s.persistance;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < s.numberOfOctaves; ++i)
+		{
+			sum += NoiseValue(p * frequency + s.center, s.seed) * amplitude;
+			frequency *= s.roughness;
+			amplitude *= s.persistance;
+		}
 	}
 
-	return noiseValue;
+	return (sum - s.minValue) * s.strength;
 }
 
 
 float TerrainHeightCalculator::ElevationAt(const glm::vec3& pointOnUnitSphere) const
 {
-	const float noiseValue = std::max(0.0f, NoiseSum(pointOnUnitSphere) - settings->minValue);
-	return 1.0f + noiseValue * settings->strength;
+	return 1.0f + std::max(0.0f, RawElevationAt(pointOnUnitSphere));
 }
 
 float TerrainHeightCalculator::RawElevationAt(const glm::vec3& pointOnUnitSphere) const
 {
-	return (NoiseSum(pointOnUnitSphere) - settings->minValue) * settings->strength;
+	const int count = std::min(static_cast<int>(shape->layers.size()), TerrainShapeSettings::maxLayers);
+
+	float elevation = 0.0f;
+	float mask = 1.0f;
+
+	for (int i = 0; i < count; ++i)
+	{
+		const TerrainLayerSettings& layer = shape->layers[i];
+		if (i > 0 && !layer.enabled)
+			continue;
+
+		const float v = EvaluateLayer(layer, pointOnUnitSphere);
+
+		if (i == 0)
+		{
+			mask = std::max(v, 0.0f);
+			if (layer.enabled)
+				elevation += v;
+		}
+		else
+		{
+			elevation += layer.useFirstLayerAsMask ? v * mask : v;
+		}
+	}
+
+	return elevation;
+
 }
 
 ElevationRange TerrainHeightCalculator::EstimateElevationRange(int sampleCount) const

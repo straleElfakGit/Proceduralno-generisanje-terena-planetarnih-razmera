@@ -24,29 +24,6 @@ void ColorGenerator::UpdateElevation(const glm::vec2& minMaxi)
 	this->minMax = minMaxi;
 }
 
-float ColorGenerator::BiomePercentFromPoint(const glm::vec3& pointOnUnitSphere) const
-{
-	TerrainHeightCalculator noiseEvaluator(&settings.biomeSettings.noise);
-
-	float heightPercent = (pointOnUnitSphere.y + 1.0f) / 2.0f;
-	heightPercent += (noiseEvaluator.RawElevationAt(pointOnUnitSphere) - settings.biomeSettings.noiseOffset)
-		* settings.biomeSettings.noiseStrength;
-
-	float biomeIndex = 0.0f;
-	const int numBiomes = static_cast<int>(settings.biomeSettings.biomes.size());
-	const float blendRange = settings.biomeSettings.blendAmount / 2.0f + 0.001f;
-
-	for (int i = 0; i < numBiomes; i++)
-	{
-		const float dst = heightPercent - settings.biomeSettings.biomes[i].startHeight;
-		const float weight = glm::clamp((dst + blendRange) / (2.0f * blendRange), 0.0f, 1.0f);
-		biomeIndex = biomeIndex * (1.0f - weight) + static_cast<float>(i) * weight;
-	}
-
-	return biomeIndex / static_cast<float>(std::max(1, numBiomes - 1));
-}
-
-
 void ColorGenerator::UpdateColors()
 {
 	const auto& biomes = settings.biomeSettings.biomes;

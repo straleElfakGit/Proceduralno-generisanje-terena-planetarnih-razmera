@@ -11,6 +11,24 @@ struct NoiseSettings {
     uint seed;
 };
 
+const int MAX_LAYERS = 4;
+const int FILTER_SIMPLE = 0;
+const int FILTER_RIGID = 1;
+
+struct TerrainLayer {
+    NoiseSettings n;
+    int filterType;
+    int enabled;
+    int useFirstLayerAsMask;
+    float weightMultiplier;
+};
+
+uniform int layerCount;
+uniform TerrainLayer layers[MAX_LAYERS];
+
+const float SEA_GRAD_MIN = -0.003;
+const float SEA_GRAD_MAX = 0.012;
+
 layout(std430, binding = 0) readonly buffer NodeBuffer
 {
     ivec4 nodes[];
@@ -36,7 +54,6 @@ const vec3 LOCAL_UP[6] = vec3[6](
     vec3(0.0, 0.0, -1.0)
     );
 
-vec4 Noised(vec3 x);
 vec4 Noised(vec3 x, uint seed);
 
 vec3 SpherifyCube(vec3 p)
@@ -50,33 +67,125 @@ vec3 SpherifyCube(vec3 p)
     return vec3(x, y, z);
 }
 
-void ElevatedPosition(vec3 pointOnSphere, out vec3 outPos, out vec3 outNormal, out float outElevation)
+vec4 EvaluateSimple(NoiseSettings s, vec3 p)
 {
-    vec3 noiseGrad = vec3(0.0);
-
-    float noiseValue = 0.0;
-    float frequency = noise.baseRoughness;
+    float sum = 0.0;
+    vec3 grad = vec3(0.0);
+    float frequency = s.baseRoughness;
     float amplitude = 1.0;
 
-    for (int i = 1; i <= noise.numberOfOctaves; i++)
+    for (int i = 0; i < s.numberOfOctaves; i++)
     {
-        vec4 val = Noised((pointOnSphere * frequency) + noise.center);
-        noiseValue += val.x * amplitude;
-        noiseGrad += val.yzw * amplitude * frequency;
-        frequency *= noise.roughness;
-        amplitude *= noise.persistance;
+        vec4 v = Noised(p * frequency + s.center, s.seed);
+        sum += v.x * amplitude;
+        grad += v.yzw * (amplitude * frequency);
+        frequency *= s.roughness;
+        amplitude *= s.persistance;
     }
 
-    outElevation = (noiseValue - noise.minValue) * noise.strength;
+    return vec4((sum - s.minValue) * s.strength, grad * s.strength);
+}
 
-    float mask = smoothstep(noise.minValue - 0.01, noise.minValue + 0.05, noiseValue);
-    noiseValue = max(0.0, noiseValue - noise.minValue);
-    noiseGrad *= mask;
+vec4 EvaluateRigid(NoiseSettings s, float weightMultiplier, vec3 p)
+{
+    float sum = 0.0;
+    vec3 grad = vec3(0.0);
+    float frequency = s.baseRoughness;
+    float amplitude = 1.0;
 
-    float finalElevation = 1.0 + (noiseValue * noise.strength);
+    float weight = 1.0;
+    vec3 weightGrad = vec3(0.0);
+
+    for (int i = 0; i < s.numberOfOctaves; i++)
+    {
+        vec4 nv = Noised(p * frequency + s.center, s.seed);
+        float n = nv.x * 2.0 - 1.0;
+        vec3 dn = nv.yzw * (2.0 * frequency);
+
+        float a = 1.0 - abs(n);
+        float v = a * a;
+        vec3 dv = -2.0 * a * sign(n) * dn;
+
+        float vw = v * weight;
+        vec3 dvw = dv * weight + v * weightGrad;
+
+        float w = vw * weightMultiplier;
+        weight = clamp(w, 0.0, 1.0);
+        weightGrad = (w > 0.0 && w < 1.0) ? dvw * weightMultiplier : vec3(0.0);
+
+        sum += vw * amplitude;
+        grad += dvw * amplitude;
+        frequency *= s.roughness;
+        amplitude *= s.persistance;
+    }
+
+    return vec4((sum - s.minValue) * s.strength, grad * s.strength);
+}
+
+vec4 EvaluateLayer(int i, vec3 p)
+{
+    if (layers[i].filterType == FILTER_RIGID)
+        return EvaluateRigid(layers[i].n, layers[i].weightMultiplier, p);
+
+    return EvaluateSimple(layers[i].n, p);
+}
+
+
+void ElevatedPosition(vec3 pointOnSphere, out vec3 outPos, out vec3 outNormal, out float outElevation)
+{
+    float total = 0.0;
+    vec3 grad = vec3(0.0);
+
+    float maskValue = 1.0;
+    vec3 maskGrad = vec3(0.0);
+
+    for (int i = 0; i < layerCount; i++)
+    {
+        if (i > 0 && layers[i].enabled == 0)
+            continue;
+
+        vec4 r = EvaluateLayer(i, pointOnSphere);
+
+        if (i == 0)
+        {
+            if (r.x > 0.0)
+            {
+                maskValue = r.x;
+                maskGrad = r.yzw;
+            }
+            else
+            {
+                maskValue = 0.0;
+                maskGrad = vec3(0.0);
+            }
+
+            if (layers[0].enabled != 0)
+            {
+                total += r.x;
+                grad += r.yzw;
+            }
+        }
+        else if (layers[i].useFirstLayerAsMask != 0)
+        {
+            total += r.x * maskValue;
+            grad += r.yzw * maskValue + r.x * maskGrad;
+        }
+        else
+        {
+            total += r.x;
+            grad += r.yzw;
+        }
+    }
+
+    outElevation = total;
+
+    float finalElevation = 1.0 + max(0.0, total);
     outPos = pointOnSphere * finalElevation;
 
-    vec3 tangentGrad = noiseGrad - pointOnSphere * dot(noiseGrad, pointOnSphere);
+    float seaMask = smoothstep(SEA_GRAD_MIN, SEA_GRAD_MAX, total);
+    vec3 g = grad * seaMask;
+
+    vec3 tangentGrad = g - pointOnSphere * dot(g, pointOnSphere);
 
     float gradLen = length(tangentGrad);
     if (gradLen > 0.0001) {
@@ -85,8 +194,8 @@ void ElevatedPosition(vec3 pointOnSphere, out vec3 outPos, out vec3 outNormal, o
         tangentGrad = (tangentGrad / gradLen) * newLen;
     }
 
-    vec3 n = pointOnSphere - (noise.strength / finalElevation) * tangentGrad;
-    outNormal = normalize(n);
+    vec3 nrm = pointOnSphere - tangentGrad / finalElevation;
+    outNormal = normalize(nrm);
 }
 
 void PositionAt(int face, float u, float v, out vec3 outPos, out vec3 outNormal, out float outElevation)

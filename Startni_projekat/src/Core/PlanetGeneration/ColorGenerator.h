@@ -27,7 +27,6 @@ public:
 
 	void UpdateElevation(const glm::vec2& minMax);
 	void UpdateColors();
-	float BiomePercentFromPoint(const glm::vec3& pointOnUnitSphere) const;
 	void SetShaderProgramParameters(const Shader& shader) const;
 
 	void SetGradientTexture(GradientTexture* gradTex) { texture = gradTex; }

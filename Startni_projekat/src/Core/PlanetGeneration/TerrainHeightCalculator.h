@@ -2,9 +2,11 @@
 #define TERRAIN_HEIGHT_CALCULATOR_H
 
 #include <glm/glm.hpp>
-#include <Settings/NoiseSettings.h>
+#include "Settings/TerrainShapeSettings.h"
 
 #include <algorithm>
+#include <cfloat>
+#include <cmath>
 #include <cstring>
 #include <cstdint>
 
@@ -17,15 +19,16 @@ struct ElevationRange
 class TerrainHeightCalculator
 {
 private:
-	const NoiseSettings* settings;
+	const TerrainShapeSettings* shape;
 
-	float Hash(float n) const;
-	glm::vec4 Noised(const glm::vec3& x) const;
-	float NoiseSum(const glm::vec3& pointOnUnitSphere) const;
+	static float Hash(float n, unsigned int seed);
+	static float NoiseValue(const glm::vec3& x, unsigned int seed);
+	static float EvaluateLayer(const TerrainLayerSettings& layer, const glm::vec3& p);
 
 public:
-	explicit TerrainHeightCalculator(const NoiseSettings* settings) :
-		settings(settings) {}
+	explicit TerrainHeightCalculator(const TerrainShapeSettings* shape) :
+		shape(shape) {
+	}
 
 	float ElevationAt(const glm::vec3& pointOnUnitSphere) const;
 	float EstimateMaxElevation(int sampleCount = 4096, float safetyMargin = 1.25f) const;

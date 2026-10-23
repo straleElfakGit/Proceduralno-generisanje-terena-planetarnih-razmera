@@ -15,8 +15,8 @@
 #include "shaderClass.h"
 #include "Scenes/Scene.h"
 #include "Settings/PlanetSettings.h"
-#include "Settings/NoiseSettings.h"
 #include "Settings/SunSettings.h"
+#include "Settings/TerrainShapeSettings.h"
 #include "PlanetGeneration/Sun.h"
 #include "PlanetGeneration/Noise.h"
 #include "PlanetGeneration/TerrainHeightCalculator.h"
@@ -39,7 +39,7 @@ protected:
     SunSettings sunSettings;
 
     Noise noise;
-    NoiseSettings noiseSettings;
+    TerrainShapeSettings terrainSettings;
 
     std::unique_ptr<SurfaceCamera> surfaceCameraPtr;
     std::unique_ptr<TerrainHeightCalculator> heightCalculatorPtr;

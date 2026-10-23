@@ -22,14 +22,17 @@ void PlanetScene::SendBiomeNoiseSettingsToShader()
 {
 	shaderPtr->Activate();
 
-	shaderPtr->setFloat("biomeNoise.strength", noiseSettings.strength);
-	shaderPtr->setInt("biomeNoise.numberOfOctaves", noiseSettings.numberOfOctaves);
-	shaderPtr->setFloat("biomeNoise.baseRoughness", noiseSettings.baseRoughness);
-	shaderPtr->setFloat("biomeNoise.roughness", noiseSettings.roughness);
-	shaderPtr->setFloat("biomeNoise.persistance", noiseSettings.persistance);
-	shaderPtr->setFloat("biomeNoise.minValue", noiseSettings.minValue);
-	shaderPtr->setVec3("biomeNoise.center", noiseSettings.center);
-	shaderPtr->setUint("biomeNoise.seed", noiseSettings.seed);
+	ColorSettings& cSettings = colorGenerator.GetSettings();
+	NoiseSettings& n = cSettings.biomeSettings.noise;
+
+	shaderPtr->setFloat("biomeNoise.strength", n.strength);
+	shaderPtr->setInt("biomeNoise.numberOfOctaves", n.numberOfOctaves);
+	shaderPtr->setFloat("biomeNoise.baseRoughness", n.baseRoughness);
+	shaderPtr->setFloat("biomeNoise.roughness", n.roughness);
+	shaderPtr->setFloat("biomeNoise.persistance", n.persistance);
+	shaderPtr->setFloat("biomeNoise.minValue", n.minValue);
+	shaderPtr->setVec3("biomeNoise.center", n.center);
+	shaderPtr->setUint("biomeNoise.seed", n.seed);
 }
 
 void PlanetScene::StartSpecific()

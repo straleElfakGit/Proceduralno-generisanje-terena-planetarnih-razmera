@@ -6,7 +6,7 @@ PlanetSceneBase::PlanetSceneBase(ApplicationBase* app) : Scene(app)
 	galaxyPtr = std::make_unique<Galaxy>();
 	sunPtr = std::make_unique<Sun>();
 
-	heightCalculatorPtr = std::make_unique<TerrainHeightCalculator>(&noiseSettings);
+	heightCalculatorPtr = std::make_unique<TerrainHeightCalculator>(&terrainSettings);
 
 	surfaceCameraPtr = std::make_unique<SurfaceCamera>();
 	surfaceCameraPtr->SetHeightCalculator(heightCalculatorPtr.get());
@@ -52,7 +52,7 @@ void PlanetSceneBase::PollElevationRange()
 	{
 		rangeDirty = false;
 
-		rangeFuture = std::async(std::launch::async, [snapshot = noiseSettings]()
+		rangeFuture = std::async(std::launch::async, [snapshot = terrainSettings]()
 			{
 				TerrainHeightCalculator calc(&snapshot);
 				return calc.EstimateElevationRange(rangeSamples);
@@ -243,16 +243,30 @@ void PlanetSceneBase::SendNoiseSettingsToShader()
 {
 	shaderPtr->Activate();
 
-	shaderPtr->setFloat("noise.strength", noiseSettings.strength);
-	shaderPtr->setInt("noise.numberOfOctaves", noiseSettings.numberOfOctaves);
-	shaderPtr->setFloat("noise.baseRoughness", noiseSettings.baseRoughness);
-	shaderPtr->setFloat("noise.roughness", noiseSettings.roughness);
-	shaderPtr->setFloat("noise.persistance", noiseSettings.persistance);
-	shaderPtr->setFloat("noise.minValue", noiseSettings.minValue);
-	shaderPtr->setVec3("noise.center", noiseSettings.center);
-	shaderPtr->setUint("noise.seed", noiseSettings.seed);
+	const int count = std::min(static_cast<int>(terrainSettings.layers.size()), TerrainShapeSettings::maxLayers);
+	shaderPtr->setInt("layerCount", count);
 
-	shaderPtr->setFloat("maxElevation", noiseSettings.CalculateTheoreticalMaxElevation());
+	for (int i = 0; i < count; i++)
+	{
+		const TerrainLayerSettings& layer = terrainSettings.layers[i];
+		const NoiseSettings& n = layer.noise;
+		const std::string p = "layers[" + std::to_string(i) + "].";
+
+		shaderPtr->setFloat(p + "n.strength", n.strength);
+		shaderPtr->setInt(p + "n.numberOfOctaves", n.numberOfOctaves);
+		shaderPtr->setFloat(p + "n.baseRoughness", n.baseRoughness);
+		shaderPtr->setFloat(p + "n.roughness", n.roughness);
+		shaderPtr->setFloat(p + "n.persistance", n.persistance);
+		shaderPtr->setFloat(p + "n.minValue", n.minValue);
+		shaderPtr->setVec3(p + "n.center", n.center);
+		shaderPtr->setUint(p + "n.seed", n.seed);
+
+		shaderPtr->setInt(p + "filterType", static_cast<int>(layer.filterType));
+		shaderPtr->setInt(p + "enabled", layer.enabled ? 1 : 0);
+		shaderPtr->setInt(p + "useFirstLayerAsMask", layer.useFirstLayerAsMask ? 1 : 0);
+		shaderPtr->setFloat(p + "weightMultiplier", layer.weightMultiplier);
+	}
+
 	shaderPtr->setVec2("heightRange", elevationRange);
 }
 
@@ -260,19 +274,66 @@ void PlanetSceneBase::RenderNoiseSettings()
 {
 	bool changed = false;
 
-	changed |= ImGui::SliderInt("Number of octavs", &noiseSettings.numberOfOctaves, 1, 8);
-	changed |= ImGui::SliderFloat("Strength", &noiseSettings.strength, 0.0f, 2.0f);
-	changed |= ImGui::SliderFloat("Base roughness", &noiseSettings.baseRoughness, 0.1f, 4.0f);
-	changed |= ImGui::SliderFloat("Roughness", &noiseSettings.roughness, 1.0f, 4.0f);
-	changed |= ImGui::SliderFloat("Persistance", &noiseSettings.persistance, 0.0f, 1.0f);
-	changed |= ImGui::SliderFloat("Min value", &noiseSettings.minValue, 0.0f, 2.0f);
-	changed |= ImGui::DragFloat3("Center", glm::value_ptr(noiseSettings.center), 0.01f);
+	for (size_t i = 0; i < terrainSettings.layers.size(); ++i)
+	{
+		TerrainLayerSettings& layer = terrainSettings.layers[i];
+		NoiseSettings& n = layer.noise;
 
-	if (ImGui::Button("Randomize Seed"))
+		ImGui::PushID(static_cast<int>(i));
+
+		const std::string header = "Noise layer " + std::to_string(i + 1);
+		if (ImGui::CollapsingHeader(header.c_str()))
+		{
+			if (ImGui::Button("Randomize Seed"))
+			{
+				std::random_device rd;
+				n.seed = static_cast<unsigned int>(rd());
+				changed = true;
+			}
+
+			const char* filterNames[] = { "Simple", "Rigid" };
+			int type = static_cast<int>(layer.filterType);
+			if (ImGui::Combo("Filter type", &type, filterNames, IM_ARRAYSIZE(filterNames)))
+			{
+				layer.filterType = static_cast<NoiseFilterType>(type);
+				changed = true;
+			}
+
+			if (i > 0)
+			{
+				changed |= ImGui::Checkbox("Enable layer", &layer.enabled);
+				changed |= ImGui::Checkbox("Use first layer as mask", &layer.useFirstLayerAsMask);
+			}
+
+			changed |= ImGui::SliderInt("Number of octavs", &n.numberOfOctaves, 1, 8);
+			changed |= ImGui::SliderFloat("Strength", &n.strength, 0.0f, 2.0f);
+			changed |= ImGui::SliderFloat("Base roughness", &n.baseRoughness, 0.1f, 4.0f);
+			changed |= ImGui::SliderFloat("Roughness", &n.roughness, 1.0f, 4.0f);
+			changed |= ImGui::SliderFloat("Persistance", &n.persistance, 0.0f, 1.0f);
+			changed |= ImGui::SliderFloat("Min value", &n.minValue, 0.0f, 2.0f);
+			changed |= ImGui::DragFloat3("Center", glm::value_ptr(n.center), 0.01f);
+
+			if (layer.filterType == NoiseFilterType::Rigid)
+				changed |= ImGui::SliderFloat("Weight multiplier", &layer.weightMultiplier, 0.0f, 2.0f);
+		}
+
+		ImGui::PopID();
+	}
+
+	if (terrainSettings.CanAddLayer() && ImGui::Button("Add layer"))
 	{
 		std::random_device rd;
-		noiseSettings.seed = static_cast<unsigned int>(rd());
+		terrainSettings.AddRigidLayer(static_cast<unsigned int>(rd()));
 		changed = true;
+	}
+	if (terrainSettings.layers.size() > 1)
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("Remove layer"))
+		{
+			terrainSettings.layers.pop_back();
+			changed = true;
+		}
 	}
 
 	if (changed)

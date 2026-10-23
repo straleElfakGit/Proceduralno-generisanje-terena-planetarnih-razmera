@@ -12,18 +12,14 @@ float hash(float n, uint seed)
     //return fract(sin(n)*753.5453123); 
 }
 
-float hash(float n)
-{
-    return hash(n, noise.seed);
-}
-
 vec4 Noised(vec3 x, uint seed)
 {
     vec3 p = floor(x);
     vec3 w = fract(x);
     //vec3 u = w * w * (3.0 - 2.0 * w);
+    //vec3 du = 6.0 * w * (1.0 - w);
     vec3 u = w * w * w * (6.0 * w * w - 15.0 * w + 10.0);
-    vec3 du = 6.0 * w * (1.0 - w);
+    vec3 du = 30.0 * w * w * (w - 1.0) * (w - 1.0);
 
     float n = p.x + p.y * 157.0 + 113.0 * p.z;
 
@@ -47,9 +43,4 @@ vec4 Noised(vec3 x, uint seed)
 
     return vec4(k0 + k1 * u.x + k2 * u.y + k3 * u.z + k4 * u.x * u.y + k5 * u.y * u.z + k6 * u.z * u.x + k7 * u.x * u.y * u.z,
         du * (vec3(k1, k2, k3) + u.yzx * vec3(k4, k5, k6) + u.zxy * vec3(k6, k4, k5) + k7 * u.yzx * u.zxy));
-}
-
-vec4 Noised(vec3 x)
-{
-    return Noised(x, noise.seed);
 }
